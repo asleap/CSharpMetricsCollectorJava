@@ -1,0 +1,3457 @@
+options {
+  LOOKAHEAD = 5;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = true;
+  DEBUG_PARSER = true;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = true;
+  UNICODE_INPUT = true;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(CSharpParser)
+
+package csmc.javacc.generated;
+
+/** Simple brace matcher. */
+public class CSharpParser {
+}
+
+PARSER_END(CSharpParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+SPECIAL_TOKEN : // Tokens which should be created but should not be passed to the parser
+{
+  < SINGLE_LINE_COMMENT: ( "//" ) (~["\r","\n","\0","\u2028","\u2029"])* >
+  | < MULTI_LINE_COMMENT: ( "/*" ) ("/"|((<ASTERISK>)* (~["/","*"])))* (<ASTERISK>)* ("/") >
+}
+
+TOKEN :
+{
+  // < NEW_LINE: ["\n"] | ("\r\n") >
+
+  // Pre-processor
+  < HASH: "#" >
+  | < DEFINE: "define" >
+  | < UNDEF: "undef" >
+
+  // Keywords
+  | < ABSTRACT: "abstract" >
+  | < ADD: "add" >
+  | < ALIAS: "alias" >
+  | < AS: "as" >
+  | < ASCENDING: "ascending" >
+  | < ASSEMBLY: "assebmly" >
+  | < AWAIT: "await" >
+  | < BASE: "base" >
+  | < BOOL: "bool" >
+  | < BREAK : "break" >
+  | < BY: "by" >
+  | < BYTE: "byte" >
+  | < CASE: "case" >
+  | < CATCH: "catch" >
+  | < CHAR: "char" >
+  | < CHECKED: "checked" >
+  | < CLASS: "class" >
+  | < CONST: "const" >
+  | < CONTINUE: "continue" >
+  | < DECIMAL: "decimal" >
+  | < _DEFAULT: "default" >
+  | < DELEGATE: "delegate" >
+  | < DESCENDING: "descending" >
+  | < DO: "do" >
+  | < DOUBLE: "double" >
+  | < DYNAMIC: "dynamic" >
+  | < ELSE: "else" >
+  | < ENUM: "enum" >
+  | < EQUALS: "equals" >
+  | < EVENT: "event" >
+  | < EXPLICIT: "explicit" >
+  | < EXTERN: "extern" >
+  | < FALSE: "false" >
+  | < FIELD: "field" >
+  | < FINALLY: "finally" >
+  | < FIXED: "fixed" >
+  | < FLOAT: "float" >
+  | < FOR: "for" >
+  | < FOREACH: "foreach" >
+  | < FROM: "from" >
+  | < GET: "get" >
+  | < GOTO: "goto" >
+  | < GROUP: "group" >
+  | < IF: "if" >
+  | < IMPLICIT: "implicit" >
+  | < IN: "in" >
+  | < INT: "int" >
+  | < INTO: "into" >
+  | < INTERFACE: "interface" >
+  | < INTERNAL: "internal" >
+  | < IS: "is" >
+  | < JOIN: "join" >
+  | < LET: "let" >
+  | < LOCK: "lock" >
+  | < LONG: "long" >
+  | < METHOD: "method" >
+  | < MODULE: "module" >
+  | < NAMEOF: "nameof" >
+  | < NAMESPACE: "namespace" >
+  | < NEW: "new" >
+  | < NULL: "null" >
+  | < OBJECT: "object" >
+  | < ON: "on" >
+  | < OPERATOR: "operator" >
+  | < ORDERBY: "orderby" >
+  | < OUT: "out" >
+  | < OVERRIDE: "override" >
+  | < PARAM: "param" >
+  | < PARAMS: "params" >
+  | < PARTIAL: "partial" >
+  | < PRIVATE: "private" >
+  | < PROPERTY: "property" >
+  | < PROTECTED: "protected" >
+  | < PUBLIC: "public" >
+  | < READONLY: "readonly" >
+  | < REF: "ref" >
+  | < REMOVE: "remove" >
+  | < RETURN: "return" >
+  | < SBYTE: "sbyte" >
+  | < SEALED: "sealed" >
+  | < SELECT: "select" >
+  | < SET: "set" >
+  | < SHORT: "short" >
+  | < SIZEOF: "sizeof" >
+  | < STACKALLOC: "stackalloc" >
+  | < STATIC: "static" >
+  | < STRING: "string" >
+  | < STRUCT: "struct" >
+  | < SWITCH: "switch" >
+  | < THIS: "this" >
+  | < THROW: "throw" >
+  | < TRUE: "true" >
+  | < TRY: "try" >
+  | < TYPE: "type" >
+  | < TYPEOF: "typeof" >
+  | < UINT: "uint" >
+  | < ULONG: "ulong" >
+  | < UNCHECKED: "unchecked" >
+  | < UNSAFE: "unsafe" >
+  | < USHORT: "ushort" >
+  | < USING: "using" >
+  | < VAR: "var" >
+  | < VIRTUAL: "virtual" >
+  | < VOID: "void" >
+  | < VOLATILE: "volatile" >
+  | < WHEN: "when" >
+  | < WHERE: "where" >
+  | < WHILE: "while" >
+  | < YIELD: "yield" >
+
+  // Operatorss and punctuators
+  | < AT: "@" >
+  | < UNDERSCORE: "_" >
+  | < LBRACE: "{" >
+  | < RBRACE: "}" >
+  | < LBRACKET: "[" >
+  | < RBRACKET: "]" >
+  | < LPAREN: "(" >
+  | < RPAREN: ")" >
+  | < DOT: "." >
+  | < COMMA: "," >
+  | < COLON: ":" >
+  | < SEMICOLON: ";" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < ASTERISK: "*" >
+  | < SLASH: "/" >
+  | < PERCENT: "%" >
+  | < AMPERSAND: "&" >
+  | < VERTICAL: "|" >
+  | < CARET: "^" >
+  | < EXCLAMATION: "!" >
+  | < TILDE: "~" >
+  | < EQUAL: "=" >
+  | < LESS: "<" >
+  | < GREATER: ">" >
+  | < QUESTION: "?" >
+  | < DBL_QUESTION: "??" >
+  | < DBL_COLON: "::" >
+  | < DBL_PLUS: "++" >
+  | < DBL_MINUS: "--" >
+  | < DBL_AMPERSAND: "&&" >
+  | < DBL_VERTICAL: "||" >
+  | < DBL_EQUAL: "==" >
+  | < EXCL_EQUAL: "!=" >
+  | < LESS_EQUAL: "<=" >
+  | < GREATER_EQUAL: ">=" >
+  | < PLUS_EQUAL: "+=" >
+  | < MINUS_EQUAL: "-=" >
+  | < ASTERISK_EQUAL: "*=" >
+  | < SLASH_EQUAL: "/=" >
+  | < PERCENT_EQUAL: "%=" >
+  | < AMPERSAND_EQUAL: "&=" >
+  | < VERTICAL_EQUAL: "|=" >
+  | < CARET_EQUAL: "^=" >
+  | < DBL_LESS: "<<" >
+  | < DBL_LESS_EQUAL: "<<=" >
+  | < DBL_GREATER: ">>" >
+  | < DBL_GREATER_EQUAL: ">>=" >
+  | < EQUAL_GREATER: "=>" >
+  | < MINUS_GREATER: "->" >
+
+  // Literals
+  | < IDENTIFIER: ("@")? ["_","a"-"z","A"-"Z"] (["_","a"-"z","A"-"Z","0"-"9"])* >
+  | < INTEGER_LITERAL: ((("0x" | "0X")(["0"-"9", "a"-"f", "A"-"F"])+) | ((["0"-"9"])+)) ("UL"|"Ul"|"uL"|"ul"|"LU"|"Lu"|"lU"|"lu"|"U"|"u"|"L"|"l")? >
+  | < REAL_LITERAL: ((["0"-"9"])+"."(["0"-"9"])+(["E","e"](["+","-"])?(["0"-"9"])+)?(["F","f","D","d","M","m"])?)
+                    |("."(["0"-"9"])+(["E","e"](["+","-"])?(["0"-"9"])+)?(["F","f","D","d","M","m"])?)
+                    |((["0"-"9"])+["E","e"](["+","-"])?(["0"-"9"])+(["F","f","D","d","M","m"])?)
+                    |((["0"-"9"])+(["F","f","D","d","M","m"])) >
+  | < CHARACTER_LITERAL: "'" ((~["'","\\","\r","\n","\0","\u2028","\u2029"])
+                         |("\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v")
+                         |("\\x"(["0"-"9","a"-"f","A"-"F"]){1,4})
+                         |("\\u"(["0"-"9","a"-"f","A"-"F"]){4})
+                         |("\\U"(["0"-"9","a"-"f","A"-"F"]){8})
+                         ) "'" >
+  | < STRING_LITERAL: ( "\"" ((~["'","\\","\r","\n","\0","\u2028","\u2029"])
+                              |("\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v")
+                              |("\\x"(["0"-"9","a"-"f","A"-"F"]){1,4})
+                              |("\\u"(["0"-"9","a"-"f","A"-"F"]){4}) | ("\\U"(["0"-"9","a"-"f","A"-"F"]){8}))*
+                        "\"")
+                      | ( "@\"" (( ~["\""] )
+                                 |( "\"\"" ))*
+                          "\"") >
+}
+
+/** Root production. */
+void Input() :
+{}
+{
+  Start() <EOF>
+}
+
+/** Brace matching production. */
+void Start() :
+{}
+{
+  CompilationUnit()
+}
+
+void CompilationUnit() :
+{}
+{
+  ExternAliasDirectiveList() UsingDirectiveList() GlobalAttributesOpt() NamespaceMemberDeclarationList()
+}
+
+void ExternAliasDirectiveList() :
+{}
+{
+  [ ExternAliasDirective() ExternAliasDirectiveList() ]
+}
+
+void UsingDirectiveList() :
+{}
+{
+  [ UsingDirective() UsingDirectiveList() ]
+}
+
+void GlobalAttributesOpt() :
+{}
+{
+ GlobalAttributes()
+ | {}
+}
+
+void NamespaceMemberDeclarationList() :
+{}
+{
+  [ NamespaceMemberDeclaration() NamespaceMemberDeclarationList() ]
+}
+
+void ExternAliasDirective() :
+{}
+{
+  <EXTERN> <ALIAS> <IDENTIFIER> <SEMICOLON>
+}
+
+void UsingDirective() :
+{}
+{
+  UsingAliasDirective()
+  | UsingNamespaceDirective()
+  | UsingStaticDirective()
+}
+
+void UsingAliasDirective() :
+{}
+{
+  <USING> <IDENTIFIER> <EQUAL> NamespaceOrTypeName() <SEMICOLON>
+}
+
+void NamespaceOrTypeName() :
+{}
+{
+  <IDENTIFIER> TypeArgumentListOpt() NamespaceOrTypeNamePrime()
+  | QualifiedAliasMember() NamespaceOrTypeNamePrime()
+}
+
+void NamespaceOrTypeNamePrime() :
+{}
+{
+  [ <DOT> <IDENTIFIER> TypeArgumentListOpt() NamespaceOrTypeNamePrime() ]
+}
+
+void TypeArgumentListOpt() :
+{}
+{
+  [ TypeArgumentList() ]
+}
+
+void TypeArgumentList() :
+{}
+{
+  <LESS> TypeArgument() <GREATER>
+}
+
+void TypeArguments() :
+{}
+{
+  TypeArgument() MoreTypeArguments()
+}
+
+void MoreTypeArguments() :
+{}
+{
+  [ <COMMA> TypeArgument() MoreTypeArguments() ]
+}
+
+void TypeArgument() :
+{}
+{
+  Type()
+}
+
+void Type() :
+{}
+{
+  // ValueType()
+  TypeName() TypePrime()
+  | SimpleType() TypePrime()
+  | ClassType() TypePrime()
+  | InterfaceType() TypePrime()
+  | DelegateType() TypePrime()
+  | TypeParameter() TypePrime()
+  | <VOID> <ASTERISK> TypePrime()
+}
+
+void TypePrime() :
+{}
+{
+  <QUESTION> TypePrime()
+  | RankSpecifierList() TypePrime()
+  | <ASTERISK> TypePrime()
+  | {}
+}
+
+void ValueType() :
+{}
+{
+  StructType()
+  | EnumType()
+}
+
+void StructType() :
+{}
+{
+  NullableType()
+  | TypeName()
+  | SimpleType()
+}
+
+void TypeName() :
+{}
+{
+  NamespaceOrTypeName()
+}
+
+void SimpleType() :
+{}
+{
+  NumericType()
+  | <BOOL>
+}
+
+void NumericType() :
+{}
+{
+  IntegralType()
+  | FloatingPointType()
+  | <DECIMAL>
+}
+
+void IntegralType() :
+{}
+{
+  <SBYTE>
+  | <BYTE>
+  | <SHORT>
+  | <USHORT>
+  | <INT>
+  | <UINT>
+  | <LONG>
+  | <ULONG>
+  | <CHAR>
+}
+
+void FloatingPointType() :
+{}
+{
+  <FLOAT>
+  | <DOUBLE>
+}
+
+void NullableType() :
+{}
+{
+  NonNullableValueType() <QUESTION>
+}
+
+void NonNullableValueType() :
+{}
+{
+  Type()
+}
+
+void EnumType() :
+{}
+{
+  TypeName()
+}
+
+void ReferenceType() :
+{}
+{
+  ClassType()
+  | InterfaceType()
+  | ArrayType()
+  | DelegateType()
+}
+
+void ClassType() :
+{}
+{
+  TypeName()
+  | <OBJECT>
+  | <DYNAMIC>
+  | <STRING>
+}
+
+void InterfaceType() :
+{}
+{
+  TypeName()
+}
+
+void ArrayType() :
+{}
+{
+  NonArrayType() RankSpecifierList()
+}
+
+void NonArrayType() :
+{}
+{
+  Type()
+}
+
+void RankSpecifierList() :
+{}
+{
+  RankSpecifier()
+  | RankSpecifier() RankSpecifierList()
+}
+
+void RankSpecifier() :
+{}
+{
+  <LBRACKET> DimSeparatorList() <RBRACKET>
+}
+
+void DimSeparatorList() :
+{}
+{
+  [ DimSeparator() DimSeparatorList() ]
+}
+
+void DimSeparator() :
+{}
+{
+  <COMMA>
+}
+
+void DelegateType() :
+{}
+{
+  TypeName()
+}
+
+void TypeParameter() :
+{}
+{
+  <IDENTIFIER>
+}
+
+void TypeUnsafe() :
+{}
+{
+  PointerType()
+}
+
+void PointerType() :
+{}
+{
+  UnmanagedType() <ASTERISK>
+  | <VOID> <ASTERISK>
+}
+
+void UnmanagedType() :
+{}
+{
+  Type()
+}
+
+void QualifiedAliasMember() :
+{}
+{
+  <IDENTIFIER> <DBL_COLON> <IDENTIFIER> TypeArgumentListOpt()
+}
+
+void UsingNamespaceDirective() :
+{}
+{
+  <USING> NamespaceName() <SEMICOLON>
+}
+
+void NamespaceName() :
+{}
+{
+  NamespaceOrTypeName()
+}
+
+void UsingStaticDirective() :
+{}
+{
+  <USING> <STATIC> TypeName() <SEMICOLON>
+}
+
+void GlobalAttributes() :
+{}
+{
+  GlobalAttributesSectionList()
+}
+
+void GlobalAttributesSectionList() :
+{}
+{
+  GlobalAttributesSection() GlobalAttributesSectionList()
+  | GlobalAttributesSection()
+}
+
+void GlobalAttributesSection() :
+{}
+{
+  <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <COMMA> <RBRACKET>
+  | <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <RBRACKET>
+}
+
+void GlobalAttributeTargetSpecifier() :
+{}
+{
+  GlobalAttributeSpecifier() <COLON>
+}
+
+void GlobalAttributeSpecifier() :
+{}
+{
+  <ASSEMBLY>
+  | <MODULE>
+}
+
+void AttributeList() :
+{}
+{
+  Attribute() MoreAttributes()
+}
+
+void Attribute() :
+{}
+{
+  AttributeName() AttributeArgumentsOpt()
+}
+
+void MoreAttributes() :
+{}
+{
+  [ <COMMA> Attribute() MoreAttributes() ]
+}
+
+void AttributeName() :
+{}
+{
+  TypeName()
+}
+
+void AttributeArgumentsOpt() :
+{}
+{
+  [ AttributeArguments() ]
+}
+
+void AttributeArguments() :
+{}
+{
+  <LPAREN> PositionalArgumentListOpt() <COMMA> NamedArgumentList() <RPAREN>
+  | <LPAREN> PositionalArgumentListOpt() <RPAREN>
+  | <LPAREN> NamedArgumentList() <RPAREN>
+}
+
+void PositionalArgumentListOpt() :
+{}
+{
+  [ PositionalArgumentList() ]
+}
+
+void PositionalArgumentList() :
+{}
+{
+  PositionalArgument() MorePositionalArguments()
+}
+
+void PositionalArgument() :
+{}
+{
+  AttributeArgumentExpression()
+}
+
+void AttributeArgumentExpression() :
+{}
+{
+  Expression()
+}
+
+void MorePositionalArguments() :
+{}
+{
+  [ <COMMA> PositionalArgument() MorePositionalArguments() ]
+}
+
+void NamedArgumentList() :
+{}
+{
+  NamedArgument() MoreNamedArguments()
+}
+
+void NamedArgument() :
+{}
+{
+  <IDENTIFIER> <EQUAL> AttributeArgumentExpression()
+}
+
+void MoreNamedArguments() :
+{}
+{
+  [ <COMMA> NamedArgument() MoreNamedArguments() ]
+}
+
+void NamespaceMemberDeclaration() :
+{}
+{
+  NamespaceDeclaration()
+  | TypeDeclaration()
+}
+
+void NamespaceDeclaration() :
+{}
+{
+  <NAMESPACE> QualifiedIdentifier() NamespaceBody() SemicolonOpt()
+}
+
+void SemicolonOpt() :
+{}
+{
+  [ <SEMICOLON> ]
+}
+
+void QualifiedIdentifier() :
+{}
+{
+  <IDENTIFIER> MoreIdentifiers()
+}
+
+void MoreIdentifiers() :
+{}
+{
+  [ <DOT> <IDENTIFIER> MoreIdentifiers() ]
+}
+
+void NamespaceBody() :
+{}
+{
+  <LBRACE> ExternAliasDirectiveList() UsingDirectiveList() NamespaceMemberDeclarationList() <RBRACE>
+}
+
+void TypeDeclaration() :
+{}
+{
+  ClassDeclaration()
+  | StructDeclaration()
+  | InterfaceDeclaration()
+  | EnumDeclaration()
+  | DelegateDeclaration()
+}
+
+void ClassDeclaration() :
+{}
+{
+  AttributesOpt() ClassModifierList() PartialOpt() <CLASS> <IDENTIFIER> TypeParameterListOpt() ClassBaseOpt() TypeParameterConstraintsClauseList() ClassBody() SemicolonOpt()
+}
+
+void AttributesOpt() :
+{}
+{
+  [ Attributes() ]
+}
+
+void ClassModifierList() :
+{}
+{
+  [ ClassModifier() ClassModifierList() ]
+}
+
+void PartialOpt() :
+{}
+{
+  [ <PARTIAL> ]
+}
+
+void TypeParameterListOpt() :
+{}
+{
+  [ TypeParameterList() ]
+}
+
+void ClassBaseOpt() :
+{}
+{
+  [ ClassBase() ]
+}
+
+void TypeParameterConstraintsClauseList() :
+{}
+{
+  [ TypeParameterConstraintsClause() TypeParameterConstraintsClauseList() ]
+}
+
+void Attributes() :
+{}
+{
+  AttributeSectionList()
+}
+
+void AttributeSectionList() :
+{}
+{
+  AttributeSection() AttributeSectionList()
+  | AttributeSection()
+}
+
+void AttributeSection() :
+{}
+{
+  <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> <RBRACKET>
+  | <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <RBRACKET>
+}
+
+void AttributeTargetSpecifierOpt() :
+{}
+{
+  [ AttributeTargetSpecifier() ]
+}
+
+void AttributeTargetSpecifier() :
+{}
+{
+  AttributeTarget() <COLON>
+}
+
+void AttributeTarget() :
+{}
+{
+  <FIELD>
+  | <EVENT>
+  | <METHOD>
+  | <PARAM>
+  | <PROPERTY>
+  | <RETURN>
+  | <TYPE>
+}
+
+void ClassModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <ABSTRACT>
+  | <SEALED>
+  | <STATIC>
+  | ClassModifierUnsafe()
+}
+
+void ClassModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void TypeParameterList() :
+{}
+{
+  <LESS> TypeParameters() <GREATER>
+}
+
+void TypeParameters() :
+{}
+{
+  AttributesOpt() TypeParameter() TypeParametersPrime()
+}
+
+void TypeParametersPrime() :
+{}
+{
+  [ <COMMA> AttributesOpt() TypeParameter() TypeParametersPrime() ]
+}
+
+void ClassBase() :
+{}
+{
+  <COLON> ClassType() <COMMA> InterfaceTypeList()
+  | <COLON> ClassType()
+  | <COLON> InterfaceTypeList()
+}
+
+void InterfaceTypeList() :
+{}
+{
+  InterfaceType() MoreInterfaceTypes()
+}
+
+void MoreInterfaceTypes() :
+{}
+{
+  [ <COMMA> InterfaceType() MoreInterfaceTypes() ]
+}
+
+void TypeParameterConstraintsClause() :
+{}
+{
+  <WHERE> TypeParameter() <COLON> TypeParameterConstraints()
+}
+
+void TypeParameterConstraints() :
+{}
+{
+  PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA> ConstructorConstraint()
+  | PrimaryConstraint() <COMMA> SecondaryConstraints()
+  | PrimaryConstraint() <COMMA> ConstructorConstraint()
+  | PrimaryConstraint()
+  | SecondaryConstraints() <COMMA> ConstructorConstraint()
+  | SecondaryConstraints()
+  | ConstructorConstraint()
+}
+
+void PrimaryConstraint() :
+{}
+{
+  ClassType()
+  | <CLASS>
+  | <STRUCT>
+}
+
+void SecondaryConstraints() :
+{}
+{
+  InterfaceType() SecondaryConstraintsPrime()
+  | TypeParameter() SecondaryConstraintsPrime()
+}
+
+void SecondaryConstraintsPrime() :
+{}
+{
+  <COMMA> InterfaceType() SecondaryConstraintsPrime()
+  | <COMMA> TypeParameter() SecondaryConstraintsPrime()
+  | {}
+}
+
+void ConstructorConstraint() :
+{}
+{
+  <NEW> <LPAREN> <RPAREN>
+}
+
+void ClassBody() :
+{}
+{
+  <LBRACE> ClassMemberDeclarationList() <RBRACE>
+}
+
+void ClassMemberDeclarationList() :
+{}
+{
+  [ ClassMemberDeclaration() ClassMemberDeclarationList() ]
+}
+
+void ClassMemberDeclaration() :
+{}
+{
+  ConstantDeclaration()
+  | FieldDeclaration()
+  | MethodDeclaration()
+  | PropertyDeclaration()
+  | EventDeclaration()
+  | IndexerDeclaration()
+  | OperatorDeclaration()
+  | ConstructorDeclaration()
+  | DestructorDeclaration()
+  | StaticConstructorDeclaration()
+  | TypeDeclaration()
+}
+
+void ConstantDeclaration() :
+{}
+{
+  AttributesOpt() ConstantModifierList() <CONST> Type() ConstantDeclarators() <SEMICOLON>
+}
+
+void ConstantModifierList() :
+{}
+{
+  [ ConstantModifier() ConstantModifierList() ]
+}
+
+void ConstantModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+}
+
+void ConstantDeclarators() :
+{}
+{
+  ConstantDeclarator() MoreConstantDeclarators()
+}
+
+void ConstantDeclarator() :
+{}
+{
+  <IDENTIFIER> <EQUAL> ConstantExpression()
+}
+
+void ConstantExpression() :
+{}
+{
+  Expression()
+}
+
+void MoreConstantDeclarators() :
+{}
+{
+  [ <COMMA> ConstantDeclarator() MoreConstantDeclarators() ]
+}
+
+void FieldDeclaration() :
+{}
+{
+  AttributesOpt() FieldModifierList() Type() VariableDeclarators() <SEMICOLON>
+}
+
+void FieldModifierList() :
+{}
+{
+  [ FieldModifier() FieldModifierList() ]
+}
+
+void FieldModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <STATIC>
+  | <READONLY>
+  | <VOLATILE>
+  | FieldModifierUnsafe()
+}
+
+void FieldModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void VariableDeclarators() :
+{}
+{
+  VariableDeclarator() MoreVariableDeclarators()
+}
+
+void VariableDeclarator() :
+{}
+{
+  <IDENTIFIER> <EQUAL> VariableInitializer()
+  | <IDENTIFIER>
+}
+
+void VariableInitializer() :
+{}
+{
+  Expression()
+  | ArrayInitializer()
+}
+
+void MoreVariableDeclarators() :
+{}
+{
+  [ <COMMA> VariableDeclarator() MoreVariableDeclarators() ]
+}
+
+void MethodDeclaration() :
+{}
+{
+  MethodHeader() MethodBody()
+}
+
+void MethodHeader() :
+{}
+{
+  AttributesOpt() MethodModifierList() PartialOpt() ReturnType() MemberName() TypeParameterListOpt() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList()
+}
+
+void MethodModifierList() :
+{}
+{
+  [ MethodModifier() MethodModifierList() ]
+}
+
+void MethodModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <STATIC>
+  | <VIRTUAL>
+  | <SEALED>
+  | <OVERRIDE>
+  | <ABSTRACT>
+  | <EXTERN>
+  | MethodModifierUnsafe()
+}
+
+void MethodModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void ReturnType() :
+{}
+{
+  Type()
+  | <VOID>
+}
+
+void MemberName() :
+{}
+{
+  <IDENTIFIER>
+  | InterfaceType() <DOT> <IDENTIFIER>
+}
+
+void FormalParameterListOpt() :
+{}
+{
+  [ FormalParameterList() ]
+}
+
+void FormalParameterList() :
+{}
+{
+  FixedParameters()
+  | FixedParameters() <COMMA> ParameterArray()
+  | ParameterArray()
+}
+
+void FixedParameters() :
+{}
+{
+  FixedParameter() MoreFixedParameters()
+}
+
+void FixedParameter() :
+{}
+{
+  AttributesOpt() ParameterModifierOpt() Type() <IDENTIFIER> DefaultArgumentOpt()
+}
+
+void ParameterModifierOpt() :
+{}
+{
+  [ ParameterModifier() ]
+}
+
+void ParameterModifier() :
+{}
+{
+  <REF>
+  | <OUT>
+  | <THIS>
+}
+
+void DefaultArgumentOpt() :
+{}
+{
+  [ DefaultArgument() ]
+}
+
+void DefaultArgument() :
+{}
+{
+  <EQUAL> Expression()
+}
+
+void MoreFixedParameters() :
+{}
+{
+  [ <COMMA> FixedParameter() MoreFixedParameters() ]
+}
+
+void ParameterArray() :
+{}
+{
+  AttributesOpt() <PARAMS> ArrayType() <IDENTIFIER>
+}
+
+void MethodBody() :
+{}
+{
+  Block()
+  | <EQUAL_GREATER> Expression() <SEMICOLON>
+  | <SEMICOLON>
+}
+
+void StatementListOpt() :
+{}
+{
+  StatementList()
+}
+
+void StatementList() :
+{}
+{
+  [ Statement() StatementList() ]
+}
+
+void PropertyDeclaration() :
+{}
+{
+  AttributesOpt() PropertyModifierList() Type() MemberName() PropertyBody()
+}
+
+void PropertyModifierList() :
+{}
+{
+  [ PropertyModifier() PropertyModifierList() ]
+}
+
+void PropertyModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <STATIC>
+  | <VIRTUAL>
+  | <SEALED>
+  | <OVERRIDE>
+  | <ABSTRACT>
+  | <EXTERN>
+}
+
+void PropertyBody() :
+{}
+{
+  <LBRACE> AccessorDeclarations() <RBRACE> PropertyInitializerOpt()
+  | <EQUAL_GREATER> Expression() <SEMICOLON>
+}
+
+void AccessorDeclarations() :
+{}
+{
+  GetAccessorDeclaration() SetAccessorDeclaration()
+  | GetAccessorDeclaration()
+  | SetAccessorDeclaration() GetAccessorDeclaration()
+  | SetAccessorDeclaration()
+}
+
+void GetAccessorDeclaration() :
+{}
+{
+  AttributesOpt() AccessorModifierOpt() <GET> AccessorBody()
+}
+
+void AccessorModifierOpt() :
+{}
+{
+  [ AccessorModifier() ]
+}
+
+void AccessorModifier() :
+{}
+{
+  <PROTECTED> <INTERNAL>
+  | <INTERNAL> <PROTECTED>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+}
+
+void AccessorBody() :
+{}
+{
+  Block()
+  | <SEMICOLON>
+}
+
+void SetAccessorDeclaration() :
+{}
+{
+  AttributesOpt() AccessorModifierOpt() <SET> AccessorBody()
+}
+
+void PropertyInitializerOpt() :
+{}
+{
+  [ PropertyInitializer() ]
+}
+
+void PropertyInitializer() :
+{}
+{
+  <EQUAL> VariableInitializer()
+}
+
+void EventDeclaration() :
+{}
+{
+  AttributesOpt() EventModifierList() <EVENT> Type() MemberName() <LBRACE> EventAccessorDeclarations() <RBRACE>
+  | AttributesOpt() EventModifierList() <EVENT> Type() VariableDeclarators() <SEMICOLON>
+}
+
+void EventModifierList() :
+{}
+{
+ [ EventModifier() EventModifierList() ]
+}
+
+void EventModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <STATIC>
+  | <VIRTUAL>
+  | <SEALED>
+  | <OVERRIDE>
+  | <ABSTRACT>
+  | <EXTERN>
+  | EventModifierUnsafe()
+}
+
+void EventModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void EventAccessorDeclarations() :
+{}
+{
+  AddAccessorDeclaration() RemoveAccessorDeclaration()
+  | RemoveAccessorDeclaration() AddAccessorDeclaration()
+}
+
+void AddAccessorDeclaration() :
+{}
+{
+  AttributesOpt() <ADD> Block()
+}
+
+void RemoveAccessorDeclaration() :
+{}
+{
+  AttributesOpt() <REMOVE> Block()
+}
+
+void IndexerDeclaration() :
+{}
+{
+  AttributesOpt() IndexerModifierList() IndexerDeclarator() IndexerBody()
+}
+
+void IndexerModifierList() :
+{}
+{
+  [ IndexerModifier() IndexerModifierList() ]
+}
+
+void IndexerModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <VIRTUAL>
+  | <SEALED>
+  | <OVERRIDE>
+  | <ABSTRACT>
+  | <EXTERN>
+  | IndexerModifierUnsafe()
+}
+
+void IndexerModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void IndexerDeclarator() :
+{}
+{
+  Type() <THIS> <LBRACKET> FormalParameterList() <RBRACKET>
+  | Type() InterfaceType() <DOT> <THIS> <LBRACKET> FormalParameterList() <RBRACKET>
+}
+
+void IndexerBody() :
+{}
+{
+  <LBRACE> AccessorDeclarations() <RBRACE>
+  | <EQUAL_GREATER> Expression() <SEMICOLON>
+}
+
+void OperatorDeclaration() :
+{}
+{
+  AttributesOpt() OperatorModifierList() OperatorDeclarator() OperatorBody()
+}
+
+void OperatorModifierList() :
+{}
+{
+  OperatorModifier() OperatorModifierList()
+  | OperatorModifier()
+}
+
+void OperatorModifier() :
+{}
+{
+  <PUBLIC>
+  | <STATIC>
+  | <EXTERN>
+  | OperatorModifierUnsafe()
+}
+
+void OperatorModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void OperatorDeclarator() :
+{}
+{
+  BinaryOperatorDeclarator()
+  | UnaryOperatorDeclarator()
+  | ConversionOperatorDeclarator()
+}
+
+void UnaryOperatorDeclarator() :
+{}
+{
+  Type() <OPERATOR> OverloadableUnaryOperator() <LPAREN> Type() <IDENTIFIER> <RPAREN>
+}
+
+void OverloadableUnaryOperator() :
+{}
+{
+  <PLUS>
+  | <MINUS>
+  | <EXCLAMATION>
+  | <TILDE>
+  | <DBL_PLUS>
+  | <DBL_MINUS>
+  | <TRUE>
+  | <FALSE>
+}
+
+void BinaryOperatorDeclarator() :
+{}
+{
+  Type() <OPERATOR> OverloadableBinaryOperator() <LPAREN> Type() <IDENTIFIER> <COMMA> Type() <IDENTIFIER> <RPAREN>
+}
+
+void OverloadableBinaryOperator() :
+{}
+{
+  <PLUS>
+  | <MINUS>
+  | <ASTERISK>
+  | <SLASH>
+  | <PERCENT>
+  | <AMPERSAND>
+  | <VERTICAL>
+  | <CARET>
+  | <DBL_LESS>
+  | <DBL_GREATER>
+  | <DBL_EQUAL>
+  | <EXCL_EQUAL>
+  | <GREATER>
+  | <LESS>
+  | <GREATER_EQUAL>
+  | <LESS_EQUAL>
+}
+
+void ConversionOperatorDeclarator() :
+{}
+{
+  <IMPLICIT> <OPERATOR> Type() <LPAREN> Type() <IDENTIFIER> <RPAREN>
+  | <EXPLICIT> <OPERATOR> Type() <LPAREN> Type() <IDENTIFIER> <RPAREN>
+}
+
+void OperatorBody() :
+{}
+{
+  Block()
+  | <EQUAL_GREATER> Expression() <SEMICOLON>
+  | <SEMICOLON>
+}
+
+void ConstructorDeclaration() :
+{}
+{
+  AttributesOpt() ConstructorModifierList() ConstructorDeclarator() ConstructorBody()
+}
+
+void ConstructorModifierList() :
+{}
+{
+  [ ConstructorModifier() ConstructorModifierList() ]
+}
+
+void ConstructorModifier() :
+{}
+{
+  <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <EXTERN>
+  | ConstructorModifierUnsafe()
+}
+
+void ConstructorModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void ConstructorDeclarator() :
+{}
+{
+  <IDENTIFIER> <LPAREN> FormalParameterListOpt() <RPAREN> ConstructorInitializerOpt()
+}
+
+void ConstructorInitializerOpt() :
+{}
+{
+  [ ConstructorInitializer() ]
+}
+
+void ConstructorInitializer() :
+{}
+{
+  <COLON> <BASE> <LPAREN> ArgumentListOpt() <RPAREN>
+  | <COLON> <THIS> <LPAREN> ArgumentListOpt() <RPAREN>
+}
+
+void ArgumentListOpt() :
+{}
+{
+  [ ArgumentList() ]
+}
+
+void ArgumentList() :
+{}
+{
+  Argument() MoreArguments()
+}
+
+void Argument() :
+{}
+{
+  ArgumentNameOpt() ArgumentValue()
+}
+
+void MoreArguments() :
+{}
+{
+  [ <COMMA> Argument() MoreArguments() ]
+}
+
+void ArgumentNameOpt() :
+{}
+{
+  [ ArgumentName() ]
+}
+
+void ArgumentName() :
+{}
+{
+  <IDENTIFIER> <COLON>
+}
+
+void ArgumentValue() :
+{}
+{
+  Expression()
+  | <REF> VariableReference()
+  | <OUT> VariableReference()
+}
+
+void VariableReference() :
+{}
+{
+  Expression()
+}
+
+void ConstructorBody() :
+{}
+{
+  Block()
+  | <SEMICOLON>
+}
+
+void DestructorDeclaration() :
+{}
+{
+  AttributesOpt() ExternOpt() <TILDE> <IDENTIFIER> <LPAREN> <RPAREN> DestructorBody()
+  | DestructorDeclarationUnsafe()
+}
+
+void ExternOpt() :
+{}
+{
+  [ <EXTERN> ]
+}
+
+void DestructorBody() :
+{}
+{
+  Block()
+  | <SEMICOLON>
+}
+
+void DestructorDeclarationUnsafe() :
+{}
+{
+  AttributesOpt() ExternOpt() UnsafeOpt() <TILDE> <IDENTIFIER> <LPAREN> <RPAREN> DestructorBody()
+  | AttributesOpt() UnsafeOpt() ExternOpt() <TILDE> <IDENTIFIER> <LPAREN> <RPAREN> DestructorBody()
+}
+
+void UnsafeOpt() :
+{}
+{
+  [ <UNSAFE> ]
+}
+
+void StaticConstructorDeclaration() :
+{}
+{
+  AttributesOpt() StaticConstructorModifiers() <IDENTIFIER> <LPAREN> <RPAREN> StaticConstructorBody()
+}
+
+void StaticConstructorModifiers() :
+{}
+{
+  ExternOpt() <STATIC>
+  | <STATIC> ExternOpt()
+  | StaticConstructorModifiersUnsafe()
+}
+
+void StaticConstructorModifiersUnsafe() :
+{}
+{
+  ExternOpt() UnsafeOpt() <STATIC>
+  | UnsafeOpt() ExternOpt() <STATIC>
+  | ExternOpt() <STATIC> UnsafeOpt()
+  | UnsafeOpt() <STATIC> ExternOpt()
+  | <STATIC> ExternOpt() UnsafeOpt()
+  | <STATIC> UnsafeOpt() ExternOpt()
+}
+
+void StaticConstructorBody() :
+{}
+{
+  Block()
+  | <SEMICOLON>
+}
+
+void StructDeclaration() :
+{}
+{
+  AttributesOpt() StructModifierList() PartialOpt() <STRUCT> <IDENTIFIER> TypeParameterListOpt() StructInterfacesOpt() TypeParameterConstraintsClauseList() StructBody() SemicolonOpt()
+}
+
+void StructModifierList() :
+{}
+{
+  [ StructModifier() StructModifierList() ]
+}
+
+void StructModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | StructModifierUnsafe()
+}
+
+void StructModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void StructInterfacesOpt() :
+{}
+{
+  [ StructInterfaces() ]
+}
+
+void StructInterfaces() :
+{}
+{
+  <COLON> InterfaceTypeList()
+}
+
+void StructBody() :
+{}
+{
+  <LBRACE> StructMemberDeclarationList() <RBRACE>
+}
+
+void StructMemberDeclarationList() :
+{}
+{
+  ConstantDeclaration()
+  | FieldDeclaration()
+  | MethodDeclaration()
+  | PropertyDeclaration()
+  | EventDeclaration()
+  | IndexerDeclaration()
+  | OperatorDeclaration()
+  | ConstructorDeclaration()
+  | StaticConstructorDeclaration()
+  | TypeDeclaration()
+  | StructMemberDeclarationUnsafe()
+}
+
+void StructMemberDeclarationUnsafe() :
+{}
+{
+  FixedSizedBufferDeclaration()
+}
+
+void FixedSizedBufferDeclaration() :
+{}
+{
+  AttributesOpt() FixedSizeBufferModifierList() <FIXED> BufferElementType() FixedSizeBufferDeclaratorList() <SEMICOLON>
+}
+
+void FixedSizeBufferModifierList() :
+{}
+{
+  [ FixedSizeBufferModifier() FixedSizeBufferModifierList() ]
+}
+
+void FixedSizeBufferModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | <UNSAFE>
+}
+
+void BufferElementType() :
+{}
+{
+  Type()
+}
+
+void FixedSizeBufferDeclaratorList() :
+{}
+{
+  FixedSizeBufferDeclarator() FixedSizeBufferDeclaratorList()
+  | FixedSizeBufferDeclarator()
+}
+
+void FixedSizeBufferDeclarator() :
+{}
+{
+  <IDENTIFIER> <LBRACKET> ConstantExpression() <RBRACKET>
+}
+
+void InterfaceDeclaration() :
+{}
+{
+  AttributesOpt() InterfaceModifierList() PartialOpt() <INTERFACE> <IDENTIFIER> VariantTypeParameterListOpt() InterfaceBaseOpt() TypeParameterConstraintsClauseList() InterfaceBody() SemicolonOpt()
+}
+
+void InterfaceModifierList() :
+{}
+{
+  [ InterfaceModifier() InterfaceModifierList() ]
+}
+
+void InterfaceModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | InterfaceModifierUnsafe()
+}
+
+void InterfaceModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void VariantTypeParameterListOpt() :
+{}
+{
+  [ VariantTypeParameterList() ]
+}
+
+void VariantTypeParameterList() :
+{}
+{
+  <LESS> VariantTypeParameters() <GREATER>
+}
+
+void VariantTypeParameters() :
+{}
+{
+  AttributesOpt() VarianceAnnotationOpt() TypeParameter() VariantTypeParametersPrime()
+}
+
+void VariantTypeParametersPrime() :
+{}
+{
+  [ <COMMA> AttributesOpt() VarianceAnnotationOpt() TypeParameter() VariantTypeParametersPrime() ]
+}
+
+void VarianceAnnotationOpt() :
+{}
+{
+  [ VarianceAnnotation() ]
+}
+
+void VarianceAnnotation() :
+{}
+{
+  <IN>
+  | <OUT>
+}
+
+void InterfaceBaseOpt() :
+{}
+{
+  [ InterfaceBase() ]
+}
+
+void InterfaceBase() :
+{}
+{
+  <COLON> InterfaceTypeList()
+}
+
+void InterfaceBody() :
+{}
+{
+  <LBRACE> InterfaceMemberDeclarationList() <RBRACE>
+}
+
+void InterfaceMemberDeclarationList() :
+{}
+{
+  [ InterfaceMemberDeclaration() InterfaceMemberDeclarationList() ]
+}
+
+void InterfaceMemberDeclaration() :
+{}
+{
+  InterfaceMethodDeclaration()
+  | InterfacePropertyDeclaration()
+  | InterfaceEventDeclaration()
+  | InterfaceIndexerDeclaration()
+}
+
+void InterfaceMethodDeclaration() :
+{}
+{
+  AttributesOpt() NewOpt() ReturnType() <IDENTIFIER> TypeParameterList() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList() <SEMICOLON>
+}
+
+void NewOpt() :
+{}
+{
+  [ <NEW> ]
+}
+
+void InterfacePropertyDeclaration() :
+{}
+{
+  AttributesOpt() NewOpt() Type() <IDENTIFIER> <LBRACE> InterfaceAccessors() <RBRACE>
+}
+
+void InterfaceAccessors() :
+{}
+{
+  AttributesOpt() <GET> <SEMICOLON> AttributesOpt() <SET> <SEMICOLON>
+  | AttributesOpt() <SET> <SEMICOLON> AttributesOpt() <GET> <SEMICOLON>
+  | AttributesOpt() <GET> <SEMICOLON>
+  | AttributesOpt() <SET> <SEMICOLON>
+}
+
+void InterfaceEventDeclaration() :
+{}
+{
+  AttributesOpt() NewOpt() <EVENT> Type() <IDENTIFIER> <SEMICOLON>
+}
+
+void InterfaceIndexerDeclaration() :
+{}
+{
+  AttributesOpt() NewOpt() Type() <THIS> <LBRACKET> FormalParameterList() <RBRACKET> <LBRACE> InterfaceAccessors() <RBRACE>
+}
+
+void EnumDeclaration() :
+{}
+{
+  AttributesOpt() EnumModifierList() <ENUM> <IDENTIFIER> EnumBaseOpt() EnumBody() SemicolonOpt()
+}
+
+void EnumModifierList() :
+{}
+{
+  [ EnumModifier() EnumModifierList() ]
+}
+
+void EnumModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+}
+
+void EnumBaseOpt() :
+{}
+{
+  [ EnumBase() ]
+}
+
+void EnumBase() :
+{}
+{
+  <COLON> IntegralType()
+}
+
+void EnumBody() :
+{}
+{
+  <LBRACE> <RBRACE>
+  | <LBRACE> EnumMemberDeclarations() <COMMA> <RBRACE>
+  | <LBRACE> EnumMemberDeclarations() <RBRACE>
+}
+
+void EnumMemberDeclarations() :
+{}
+{
+  EnumMemberDeclaration() MoreEnumMemberDeclarations()
+}
+
+void MoreEnumMemberDeclarations() :
+{}
+{
+  [ <COMMA> EnumMemberDeclaration() MoreEnumMemberDeclarations() ]
+}
+
+void EnumMemberDeclaration() :
+{}
+{
+  AttributesOpt() <IDENTIFIER> <EQUAL> ConstantExpression()
+  | AttributesOpt() <IDENTIFIER>
+}
+
+void DelegateDeclaration() :
+{}
+{
+  AttributesOpt() DelegateModifierList() <DELEGATE> ReturnType() <IDENTIFIER> VariantTypeParameterListOpt() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList() SemicolonOpt()
+}
+
+void DelegateModifierList() :
+{}
+{
+  [ DelegateModifier() DelegateModifierList() ]
+}
+
+void DelegateModifier() :
+{}
+{
+  <NEW>
+  | <PUBLIC>
+  | <PROTECTED>
+  | <INTERNAL>
+  | <PRIVATE>
+  | DelegateModifierUnsafe()
+}
+
+void DelegateModifierUnsafe() :
+{}
+{
+  <UNSAFE>
+}
+
+void Expression() :
+{}
+{
+  NonAssignmentExpression()
+  | Assignment()
+}
+
+void NonAssignmentExpression() :
+{}
+{
+  ConditionalExpression()
+  | LambdaExpression()
+  | QueryExpression()
+}
+
+void ConditionalExpression() :
+{}
+{
+  NullCoalescingExpression()
+  | NullCoalescingExpression() <QUESTION> Expression() <COLON> Expression()
+}
+
+void NullCoalescingExpression() :
+{}
+{
+  ConditionalOrExpression()
+  | ConditionalOrExpression() <DBL_QUESTION> NullCoalescingExpression()
+}
+
+void ConditionalOrExpression() :
+{}
+{
+  ConditionalAndExpression() ConditionalOrExpressionPrime()
+}
+
+void ConditionalOrExpressionPrime() :
+{}
+{
+  [ <DBL_VERTICAL> ConditionalAndExpression() ConditionalOrExpressionPrime() ]
+}
+
+void ConditionalAndExpression() :
+{}
+{
+  InclusiveOrExpression() ConditionalAndExpressionPrime()
+}
+
+void ConditionalAndExpressionPrime() :
+{}
+{
+  [ <DBL_AMPERSAND> InclusiveOrExpression() ConditionalAndExpressionPrime() ]
+}
+
+void InclusiveOrExpression() :
+{}
+{
+  ExclusiveOrExpression() InclusiveOrExpressionPrime()
+}
+
+void InclusiveOrExpressionPrime() :
+{}
+{
+  [ <VERTICAL> ExclusiveOrExpression() InclusiveOrExpressionPrime() ]
+}
+
+void ExclusiveOrExpression() :
+{}
+{
+  AndExpression() ExclusiveOrExpressionPrime()
+}
+
+void ExclusiveOrExpressionPrime() :
+{}
+{
+  [ <CARET> AndExpression() ExclusiveOrExpressionPrime() ]
+}
+
+void AndExpression() :
+{}
+{
+  EqualityExpression() AndExpressionPrime()
+}
+
+void AndExpressionPrime() :
+{}
+{
+  [ <AMPERSAND> EqualityExpression() AndExpressionPrime() ]
+}
+
+void EqualityExpression() :
+{}
+{
+  RelationalExpression() EqualityExpressionPrime()
+}
+
+void EqualityExpressionPrime() :
+{}
+{
+  <DBL_EQUAL> RelationalExpression() EqualityExpressionPrime()
+  | <EXCL_EQUAL> RelationalExpression() EqualityExpressionPrime()
+  | {}
+}
+
+void RelationalExpression() :
+{}
+{
+  ShiftExpression() RelationalExpressionPrime()
+}
+
+void RelationalExpressionPrime() :
+{}
+{
+  <LESS> ShiftExpression() RelationalExpressionPrime()
+  | <GREATER> ShiftExpression() RelationalExpressionPrime()
+  | <LESS_EQUAL> ShiftExpression() RelationalExpressionPrime()
+  | <GREATER_EQUAL> ShiftExpression() RelationalExpressionPrime()
+  | <IS> Type() RelationalExpressionPrime()
+  | <AS> Type() RelationalExpressionPrime()
+  | {}
+}
+
+void ShiftExpression() :
+{}
+{
+  AdditiveExpression() ShiftExpressionPrime()
+}
+
+void ShiftExpressionPrime() :
+{}
+{
+  <DBL_LESS> AdditiveExpression() ShiftExpressionPrime()
+  | <DBL_GREATER> AdditiveExpression() ShiftExpressionPrime()
+  | {}
+}
+
+void AdditiveExpression() :
+{}
+{
+  MultiplicativeExpression() AdditiveExpressionPrime()
+}
+
+void AdditiveExpressionPrime() :
+{}
+{
+  <PLUS> MultiplicativeExpression() AdditiveExpressionPrime()
+  | <MINUS> MultiplicativeExpression() AdditiveExpressionPrime()
+  | {}
+}
+
+void MultiplicativeExpression() :
+{}
+{
+  UnaryExpression() MultiplicativeExpressionPrime()
+}
+
+void MultiplicativeExpressionPrime() :
+{}
+{
+  <ASTERISK> UnaryExpression() MultiplicativeExpressionPrime()
+  | <SLASH> UnaryExpression() MultiplicativeExpressionPrime()
+  | <PERCENT> UnaryExpression() MultiplicativeExpressionPrime()
+  | {}
+}
+
+void UnaryExpression() :
+{}
+{
+  PrimaryExpression()
+  | NullConditionalExpression()
+  | <PLUS> UnaryExpression()
+  | <MINUS> UnaryExpression()
+  | <EXCLAMATION> UnaryExpression()
+  | <TILDE> UnaryExpression()
+  | PreIncrementExpression()
+  | PreDecrementExpression()
+  | CastExpression()
+  | AwaitExpression()
+  | UnaryExpressionUnsafe()
+}
+
+void PrimaryExpression() :
+{}
+{
+  // PrimaryNoArrayCreationExpressionPrime() <LBRACKET> Expression() <RBRACKET> PrimaryExpressionPrime()
+  PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
+  | PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
+  | SizeofExpression() PrimaryExpressionPrime()
+  | PredefinedType() <DOT> <IDENTIFIER> TypeArgumentListOpt() PrimaryExpressionPrime()
+  | QualifiedAliasMember() <DOT> <IDENTIFIER> PrimaryExpressionPrime()
+  | ArrayCreationExpression() PrimaryExpressionPrime()
+}
+
+void PrimaryExpressionPrime() :
+{}
+{
+  <DOT> <IDENTIFIER> TypeArgumentListOpt() PrimaryExpressionPrime()
+  | <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
+  | <MINUS_GREATER> <IDENTIFIER> PrimaryExpressionPrime()
+   // | <DBL_PLUS> PrimaryExpressionPrime()
+   // | <DBL_MINUS> PrimaryExpressionPrime()
+  | {}
+}
+
+void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementAccess, PostIncrementExpression, PostDecrementExpression, InvocationExpression and Unsafe
+{}
+{
+  Literal()
+  | ParanthesizedExpression()
+  | ThisAccess()
+  | BaseAccess()
+  | ObjectCreationExpression()
+  | DelegateCreationExpression()
+  | AnonymousObjectCreationExpression()
+  | TypeofExpression()
+  | CheckedExpression()
+  | UncheckedExpression()
+  | DefaultValueExpression()
+  | NameofExpression()
+  | AnonymousMethodExpression()
+  | SimpleName()
+}
+
+void PrimaryNoArrayCreationExpression() :
+{}
+{
+  Literal() PrimaryNoArrayCreationExpressionPrime2()
+  | SimpleName() PrimaryNoArrayCreationExpressionPrime2()
+  | ParanthesizedExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | MemberAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | InvocationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | ThisAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | BaseAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | PostIncrementExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | PostDecrementExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | ObjectCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | DelegateCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | AnonymousObjectCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | TypeofExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | CheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | UncheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | DefaultValueExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | NameofExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | AnonymousMethodExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | PointerMemberAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | SizeofExpression() PrimaryNoArrayCreationExpressionPrime2()
+}
+
+void PrimaryNoArrayCreationExpressionPrime2() :
+{}
+{
+  <LBRACKET> ExpressionList() <RBRACKET> PrimaryNoArrayCreationExpressionPrime2()
+  // | <LBRACKET> Expression() <RBRACKET> PrimaryNoArrayCreationExpressionPrime2()
+  | {}
+}
+
+void Literal() :
+{}
+{
+  <TRUE>
+  | <FALSE>
+  | <INTEGER_LITERAL>
+  | <REAL_LITERAL>
+  | <CHARACTER_LITERAL>
+  | <STRING_LITERAL>
+  | <NULL>
+}
+
+void SimpleName() :
+{}
+{
+  <IDENTIFIER> TypeArgumentListOpt()
+}
+
+void ParanthesizedExpression() :
+{}
+{
+  <LPAREN> Expression() <RPAREN>
+}
+
+void MemberAccess() :
+{}
+{
+  PrimaryExpression() <DOT> <IDENTIFIER> TypeArgumentListOpt()
+  | PredefinedType() <DOT> <IDENTIFIER> TypeArgumentListOpt()
+  | QualifiedAliasMember() <DOT> <IDENTIFIER>
+}
+
+void InvocationExpression() :
+{}
+{
+  PrimaryExpression() <LPAREN> ArgumentListOpt() <RPAREN>
+}
+
+void ElementAccess() :
+{}
+{
+  PrimaryNoArrayCreationExpression() <LBRACKET> ExpressionList() <RBRACKET>
+}
+
+void ExpressionList() :
+{}
+{
+  Expression() MoreExpressions()
+}
+
+void MoreExpressions() :
+{}
+{
+  [ <COMMA> Expression() MoreExpressions() ]
+}
+
+void ThisAccess() :
+{}
+{
+  <THIS>
+}
+
+void BaseAccess() :
+{}
+{
+  <BASE> <DOT> <IDENTIFIER>
+  | <BASE> <LBRACKET> ExpressionList() <RBRACKET>
+}
+
+void PostIncrementExpression() :
+{}
+{
+  PrimaryExpression() <DBL_PLUS>
+}
+
+void PostDecrementExpression() :
+{}
+{
+  PrimaryExpression() <DBL_MINUS>
+}
+
+void ObjectCreationExpression() :
+{}
+{
+  <NEW> Type() <LPAREN> ArgumentListOpt() <RPAREN> ObjectOrCollectionInitializerOpt()
+  | <NEW> Type() ObjectOrCollectionInitializerOpt()
+}
+
+void ObjectOrCollectionInitializerOpt() :
+{}
+{
+  [ ObjectOrCollectionInitializer() ]
+}
+
+void ObjectOrCollectionInitializer() :
+{}
+{
+  ObjectInitializer()
+  | CollectionInitializer()
+}
+
+void ObjectInitializer() :
+{}
+{
+  <LBRACE> MemberInitializerList() <COMMA> <RBRACE>
+  | <LBRACE> MemberInitializerListOpt() <RBRACE>
+}
+
+void MemberInitializerListOpt() :
+{}
+{
+  [ MemberInitializerList() ]
+}
+
+void MemberInitializerList() :
+{}
+{
+  MemberInitializer() MoreMemberInitializers()
+}
+
+void MoreMemberInitializers() :
+{}
+{
+  [ <COMMA> MemberInitializer() MoreMemberInitializers() ]
+}
+
+void MemberInitializer() :
+{}
+{
+  InitializerTarget() <EQUAL> InitializerValue()
+}
+
+void InitializerTarget() :
+{}
+{
+  <IDENTIFIER>
+  <LBRACKET> ArgumentList() <RBRACKET>
+}
+
+void InitializerValue() :
+{}
+{
+  Expression()
+  | ObjectOrCollectionInitializer()
+}
+
+void CollectionInitializer() :
+{}
+{
+  <LBRACE> ElementInitializerList() <COMMA> <RBRACE>
+  | <LBRACE> ElementInitializerList() <RBRACE>
+}
+
+void ElementInitializerList() :
+{}
+{
+  ElementInitializer() MoreElementInitializers()
+}
+
+void MoreElementInitializers() :
+{}
+{
+  [ <COMMA> ElementInitializer() MoreElementInitializers() ]
+}
+
+void ElementInitializer() :
+{}
+{
+  NonAssignmentExpression()
+  | <LBRACE> ExpressionList() <RBRACE>
+}
+
+void DelegateCreationExpression() :
+{}
+{
+  <NEW> DelegateType() <LPAREN> Expression() <RPAREN>
+}
+
+void AnonymousObjectCreationExpression() :
+{}
+{
+  <NEW> AnonymousObjectInitializer()
+}
+
+void AnonymousObjectInitializer() :
+{}
+{
+  <LBRACE> MemberDeclarattorListOpt() <COMMA> <RBRACE>
+  | <LBRACE> MemberDeclarattorListOpt() <RBRACE>
+}
+
+void MemberDeclarattorListOpt() :
+{}
+{
+  [ MemberDeclaratorList() ]
+}
+
+void MemberDeclaratorList() :
+{}
+{
+  MemberDeclarator() MoreMemberDeclarators()
+}
+
+void MoreMemberDeclarators() :
+{}
+{
+  [ <COMMA> MemberDeclarator() MoreMemberDeclarators() ]
+}
+
+void MemberDeclarator() :
+{}
+{
+  <IDENTIFIER> <EQUAL> Expression()
+  | SimpleName()
+  | MemberAccess()
+  | BaseAccess()
+  | NullConditionalMemberAccess()
+}
+
+void NullConditionalMemberAccess() :
+{}
+{
+  PrimaryExpression() NullConditionalOperationsOpt() <QUESTION> <DOT> <IDENTIFIER> TypeArgumentListOpt()
+  | PrimaryExpression() NullConditionalOperationsOpt() <DOT> <IDENTIFIER> TypeArgumentListOpt()
+}
+
+void NullConditionalOperationsOpt() :
+{}
+{
+  [ NullConditionalOperations() ]
+}
+
+void NullConditionalOperations() :
+{}
+{
+  <QUESTION> <DOT> <IDENTIFIER> TypeArgumentListOpt() NullConditionalOperationsPrime()
+  | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
+}
+
+void NullConditionalOperationsPrime() :
+{}
+{
+  <QUESTION> <DOT> <IDENTIFIER> TypeArgumentListOpt() NullConditionalOperationsPrime()
+  | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
+  | <DOT> <IDENTIFIER> TypeArgumentListOpt() NullConditionalOperationsPrime()
+  | <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
+  | <LPAREN> ArgumentListOpt() <RPAREN> NullConditionalOperationsPrime()
+  | {}
+}
+
+void TypeofExpression() :
+{}
+{
+  <TYPEOF> <LPAREN> Type() <RPAREN>
+  | <TYPEOF> <LPAREN> UnboundTypeName() <RPAREN>
+  | <TYPEOF> <LPAREN> <VOID> <RPAREN>
+}
+
+void UnboundTypeName() :
+{}
+{
+  <IDENTIFIER> GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
+  | <IDENTIFIER> <DBL_COLON> <IDENTIFIER> GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
+}
+
+void UnboundTypeNamePrime() :
+{}
+{
+  [ <DOT> <IDENTIFIER> GenericDimensionSpecifierOpt() UnboundTypeNamePrime() ]
+}
+
+void GenericDimensionSpecifierOpt() :
+{}
+{
+  [ GenericDimensionSpecifier() ]
+}
+
+void GenericDimensionSpecifier() :
+{}
+{
+  <LESS> CommaList() <GREATER>
+}
+
+void CommaList() :
+{}
+{
+  [ <COMMA> CommaList() ]
+}
+
+void CheckedExpression() :
+{}
+{
+  <CHECKED> <LPAREN> Expression() <RPAREN>
+}
+
+void UncheckedExpression() :
+{}
+{
+  <UNCHECKED> <LPAREN> Expression() <RPAREN>
+}
+
+void DefaultValueExpression() :
+{}
+{
+  <_DEFAULT> <LPAREN> Type() <RPAREN>
+}
+
+void NameofExpression() :
+{}
+{
+  <NAMEOF> <LPAREN> NamedEntity() <RPAREN>
+}
+
+void NamedEntity() :
+{}
+{
+  NamedEntityTargetPrime() <DOT> <IDENTIFIER> TypeArgumentListOpt() NamedEntityPrime()
+  | SimpleName() NamedEntityPrime()
+}
+
+void NamedEntityPrime() :
+{}
+{
+  [ <DOT> <IDENTIFIER> TypeArgumentListOpt() NamedEntityPrime() ]
+}
+
+void NamedEntityTargetPrime() : // Without NamedEntity
+{}
+{
+  <THIS>
+  | <BASE>
+  | PredefinedType()
+  | QualifiedAliasMember()
+}
+
+void NamedEntityTarget() :
+{}
+{
+  <THIS>
+  | <BASE>
+  | NamedEntity()
+  | PredefinedType()
+  | QualifiedAliasMember()
+}
+
+void PredefinedType() :
+{}
+{
+  <BOOL>
+  | <BYTE>
+  | <CHAR>
+  | <DECIMAL>
+  | <DOUBLE>
+  | <FLOAT>
+  | <INT>
+  | <LONG>
+  | <OBJECT>
+  | <SBYTE>
+  | <SHORT>
+  | <STRING>
+  | <UINT>
+  | <ULONG>
+  | <USHORT>
+}
+
+void AnonymousMethodExpression() :
+{}
+{
+ <DELEGATE> ExplicitAnonymousFunctionSignatureOpt() Block()
+}
+
+void ExplicitAnonymousFunctionSignatureOpt() :
+{}
+{
+  [ ExplicitAnonymousFunctionSignature() ]
+}
+
+void ExplicitAnonymousFunctionSignature() :
+{}
+{
+  <LPAREN> ExplicitAnonymousFunctionParameterListOpt() <RPAREN>
+}
+
+void ExplicitAnonymousFunctionParameterListOpt() :
+{}
+{
+  [ ExplicitAnonymousFunctionParameterList() ]
+}
+
+void ExplicitAnonymousFunctionParameterList() :
+{}
+{
+  ExplicitAnonymousFunctionParameter() MoreExplicitAnonymousFunctionParameters()
+}
+
+void MoreExplicitAnonymousFunctionParameters() :
+{}
+{
+  [ <COMMA> ExplicitAnonymousFunctionParameter() MoreExplicitAnonymousFunctionParameters() ]
+}
+
+void ExplicitAnonymousFunctionParameter() :
+{}
+{
+  AnonymousFunctionParameterModifierOpt() Type() <IDENTIFIER>
+}
+
+void AnonymousFunctionParameterModifierOpt() :
+{}
+{
+  [ AnonymousFunctionParameterModifier() ]
+}
+
+void AnonymousFunctionParameterModifier() :
+{}
+{
+  <REF>
+  | <OUT>
+}
+
+void PrimaryNoArrayCreationExpressionUnsafe() :
+{}
+{
+  PointerMemberAccess()
+  | PointerElementAccess()
+  | SizeofExpression()
+}
+
+void PointerMemberAccess() :
+{}
+{
+  PrimaryExpression() <MINUS_GREATER> <IDENTIFIER>
+}
+
+void PointerElementAccess() :
+{}
+{
+  PrimaryNoArrayCreationExpression() <LBRACKET> Expression() <RBRACKET>
+}
+
+void SizeofExpression() :
+{}
+{
+  <SIZEOF> <LPAREN> UnmanagedType() <RPAREN>
+}
+
+void ArrayCreationExpression() :
+{}
+{
+  <NEW> ArrayType() ArrayInitializer()
+  | <NEW> NonArrayType() <LBRACKET> ExpressionList() <RBRACKET> RankSpecifierListOpt() ArrayInitializerOpt()
+  | <NEW> RankSpecifier() ArrayInitializer()
+}
+
+void RankSpecifierListOpt() :
+{}
+{
+  [ RankSpecifierList() ]
+}
+
+void ArrayInitializerOpt() :
+{}
+{
+  [ ArrayInitializer() ]
+}
+
+void ArrayInitializer() :
+{}
+{
+  <LBRACE> VariableInitializerList() <COMMA> <RBRACE>
+  | <LBRACE> VariableInitializerListOpt() <RBRACE>
+}
+
+void VariableInitializerListOpt() :
+{}
+{
+  [ VariableInitializerList() ]
+}
+
+void VariableInitializerList() :
+{}
+{
+  VariableInitializer() MoreVariableInitializers()
+}
+
+void MoreVariableInitializers() :
+{}
+{
+  [ <COMMA> VariableInitializer() MoreVariableInitializers() ]
+}
+
+void NullConditionalExpression() :
+{}
+{
+  PrimaryExpression() NullConditionalOperations()
+}
+
+void PreIncrementExpression() :
+{}
+{
+  <DBL_PLUS> UnaryExpression()
+}
+
+void PreDecrementExpression() :
+{}
+{
+  <DBL_MINUS> UnaryExpression()
+}
+
+void CastExpression() :
+{}
+{
+  <LPAREN> Type() <RPAREN> UnaryExpression()
+}
+
+void AwaitExpression() :
+{}
+{
+  <AWAIT> UnaryExpression()
+}
+
+void UnaryExpressionUnsafe() :
+{}
+{
+  PointerIndirectionExpression()
+  | AddressofExpression()
+}
+
+void PointerIndirectionExpression() :
+{}
+{
+  <ASTERISK> UnaryExpression()
+}
+
+void AddressofExpression() :
+{}
+{
+  <AMPERSAND> UnaryExpression()
+}
+
+void LambdaExpression() :
+{}
+{
+  AnonymousFunctionSignature() <EQUAL_GREATER> AnonymousFunctionBody()
+}
+
+void AnonymousFunctionSignature() :
+{}
+{
+  ExplicitAnonymousFunctionSignature()
+  | ImplicitAnonymousFunctionSignature()
+}
+
+void ImplicitAnonymousFunctionSignature() :
+{}
+{
+  <LPAREN> ImplicitAnonymousFunctionParameterListOpt() <RPAREN>
+  | ImplicitAnonymousFunctionParameter()
+}
+
+void ImplicitAnonymousFunctionParameterListOpt() :
+{}
+{
+  [ ImplicitAnonymousFunctionParameterList() ]
+}
+
+void ImplicitAnonymousFunctionParameterList() :
+{}
+{
+  ImplicitAnonymousFunctionParameter() MoreImplicitAnonymousFunctionParameters()
+}
+
+void MoreImplicitAnonymousFunctionParameters() :
+{}
+{
+  [ <COMMA> ImplicitAnonymousFunctionParameter() MoreImplicitAnonymousFunctionParameters() ]
+}
+
+void ImplicitAnonymousFunctionParameter() :
+{}
+{
+  <IDENTIFIER>
+}
+
+void AnonymousFunctionBody() :
+{}
+{
+  Expression()
+  | Block()
+}
+
+void QueryExpression() :
+{}
+{
+  FromClause() QueryBody()
+}
+
+void FromClause() :
+{}
+{
+  <FROM> TypeOpt() <IDENTIFIER> <IN> Expression()
+}
+
+void TypeOpt() :
+{}
+{
+  [ Type() ]
+}
+
+void QueryBody() :
+{}
+{
+  QueryBodyClausesOpt() SelectOrGroupClause() QueryContinuationOpt()
+}
+
+void QueryBodyClausesOpt() :
+{}
+{
+  [ QueryBodyClauses() ]
+}
+
+void QueryContinuationOpt() :
+{}
+{
+  [ QueryContinuation() ]
+}
+
+void QueryBodyClauses() :
+{}
+{
+  QueryBodyClause() QueryBodyClauses()
+  | QueryBodyClause()
+}
+
+void QueryBodyClause() :
+{}
+{
+  FromClause()
+  | LetClause()
+  | WhereClause()
+  | JoinClause()
+  | JoinIntoClause()
+  | OrderbyClause()
+}
+
+void LetClause() :
+{}
+{
+  <LET> <IDENTIFIER> <EQUAL> Expression()
+}
+
+void WhereClause() :
+{}
+{
+  <WHERE> BooleanExpression()
+}
+
+void BooleanExpression() :
+{}
+{
+  Expression()
+}
+
+void JoinClause() :
+{}
+{
+  <JOIN> TypeOpt() <IDENTIFIER> <IN> Expression() <ON> Expression() <EQUALS> Expression()
+}
+
+void JoinIntoClause() :
+{}
+{
+  <JOIN> TypeOpt() <IDENTIFIER> <IN> Expression() <ON> Expression() <EQUALS> Expression() <INTO> <IDENTIFIER>
+}
+
+void OrderbyClause() :
+{}
+{
+  <ORDERBY> Orderings()
+}
+
+void Orderings() :
+{}
+{
+  Ordering() MoreOrderings()
+}
+
+void MoreOrderings() :
+{}
+{
+  [ <COMMA> Ordering() MoreOrderings() ]
+}
+
+void Ordering() :
+{}
+{
+  Expression() OrderingDirectionOpt()
+}
+
+void OrderingDirectionOpt() :
+{}
+{
+  [ OrderingDirection() ]
+}
+
+void OrderingDirection() :
+{}
+{
+  <ASCENDING>
+  | <DESCENDING>
+}
+
+void SelectOrGroupClause() :
+{}
+{
+  SelectClause()
+  | GroupClause()
+}
+
+void SelectClause() :
+{}
+{
+  <SELECT> Expression()
+}
+
+void GroupClause() :
+{}
+{
+  <GROUP> Expression() <BY> Expression()
+}
+
+void QueryContinuation() :
+{}
+{
+  <INTO> <IDENTIFIER> QueryBody()
+}
+
+void Assignment() :
+{}
+{
+  UnaryExpression() AssignmentOperator() Expression()
+}
+
+void AssignmentOperator() :
+{}
+{
+  <EQUAL>
+  | <PLUS_EQUAL>
+  | <MINUS_EQUAL>
+  | <ASTERISK_EQUAL>
+  | <SLASH_EQUAL>
+  | <PERCENT_EQUAL>
+  | <AMPERSAND_EQUAL>
+  | <VERTICAL_EQUAL>
+  | <CARET_EQUAL>
+  | <DBL_LESS_EQUAL>
+  | <DBL_GREATER_EQUAL>
+}
+
+void Statement() :
+{}
+{
+  EmbeddedStatement()
+  | DeclarationStatement()
+  | LabeledStatement()
+}
+
+void LabeledStatement() :
+{}
+{
+  <IDENTIFIER> <COLON> Statement()
+}
+
+void DeclarationStatement() :
+{}
+{
+  LocalConstantDeclaration() <SEMICOLON>
+  | LocalVariableDeclaration() <SEMICOLON>
+}
+
+void LocalVariableDeclaration() :
+{}
+{
+  LocalVariableType() LocalVariableDeclarators()
+}
+
+void LocalVariableType() :
+{}
+{
+  Type()
+  | <VAR>
+}
+
+void LocalVariableDeclarators() :
+{}
+{
+  LocalVariableDeclarator() LocalVariableDeclaratorsPrime()
+}
+
+void LocalVariableDeclaratorsPrime() :
+{}
+{
+  [ <COMMA> LocalVariableDeclarator() LocalVariableDeclaratorsPrime() ]
+}
+
+void LocalVariableDeclarator() :
+{}
+{
+  <IDENTIFIER> <EQUAL> LocalVariableInitializer()
+  | <IDENTIFIER>
+}
+
+void LocalVariableInitializer() :
+{}
+{
+  Expression()
+  | ArrayInitializer()
+  | LocalVariableInitializerUnsafe()
+}
+
+void LocalVariableInitializerUnsafe() :
+{}
+{
+  StackallocInitializer()
+}
+
+void StackallocInitializer() :
+{}
+{
+  <STACKALLOC> UnmanagedType() <LBRACKET> Expression() <RBRACKET>
+}
+
+void LocalConstantDeclaration() :
+{}
+{
+  <CONST> Type() ConstantDeclarators()
+}
+
+void EmbeddedStatement() :
+{}
+{
+  Block()
+  | EmptyStatement()
+  | ExpressionStatement()
+  | SelectionStatement()
+  | IterationStatement()
+  | JumpStatement()
+  | TryStatement()
+  | CheckedStatement()
+  | UncheckedStatement()
+  | LockStatement()
+  | UsingStatement()
+  | YieldStatement()
+  | EmbeddedStatementUnsafe()
+}
+
+void Block() :
+{}
+{
+  <LBRACE> StatementListOpt() <RBRACE>
+}
+
+void EmptyStatement() :
+{}
+{
+  <SEMICOLON>
+}
+
+void ExpressionStatement() :
+{}
+{
+  StatementExpression() <SEMICOLON>
+}
+
+void StatementExpression() :
+{}
+{
+  InvocationExpression()
+  | NullConditionalInvocationExpression()
+  | ObjectCreationExpression()
+  | Assignment()
+  | PostIncrementExpression()
+  | PostDecrementExpression()
+  | PreIncrementExpression()
+  | PreDecrementExpression()
+  | AwaitExpression()
+}
+
+void NullConditionalInvocationExpression() :
+{}
+{
+  PrimaryExpression() NullConditionalOperations() <LPAREN> ArgumentListOpt() <RPAREN>
+}
+
+void SelectionStatement() :
+{}
+{
+  IfStatement()
+  | SwitchStatement()
+}
+
+void IfStatement() :
+{}
+{
+  <IF> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement() <ELSE> EmbeddedStatement()
+  | <IF> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement()
+}
+
+void SwitchStatement() :
+{}
+{
+  <SWITCH> <LPAREN> Expression() <RPAREN> SwitchBlock()
+}
+
+void SwitchBlock() :
+{}
+{
+  <LBRACE> SwitchSectionList() <RBRACE>
+}
+
+void SwitchSectionList() :
+{}
+{
+  [ SwitchSection() SwitchSectionList() ]
+}
+
+void SwitchSection() :
+{}
+{
+  SwitchLabelList() StatementList()
+}
+
+void SwitchLabelList() :
+{}
+{
+  SwitchLabel()
+  | SwitchLabel() SwitchLabelList()
+}
+
+void SwitchLabel() :
+{}
+{
+  <CASE> ConstantExpression() <COLON>
+  | <_DEFAULT> <COLON>
+}
+
+void IterationStatement() :
+{}
+{
+  WhileStatement()
+  | DoStatement()
+  | ForStatement()
+  | ForeachStatement()
+}
+
+void WhileStatement() :
+{}
+{
+  <WHILE> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement()
+}
+
+void DoStatement() :
+{}
+{
+  <DO> EmbeddedStatement() <WHILE> <LPAREN> BooleanExpression() <RPAREN> <SEMICOLON>
+}
+
+void ForStatement() :
+{}
+{
+  <FOR> <LPAREN> ForInitializerOpt() <SEMICOLON> ForConditionOpt() <SEMICOLON> ForIteratorOpt() <RPAREN> EmbeddedStatement()
+}
+
+void ForInitializerOpt() :
+{}
+{
+  [ ForInitializer() ]
+}
+
+void ForConditionOpt() :
+{}
+{
+  [ ForCondition() ]
+}
+
+void ForIteratorOpt() :
+{}
+{
+  ForIterator()
+  | {}
+}
+
+void ForInitializer() :
+{}
+{
+  LocalVariableDeclaration()
+  | StatementExpressionList()
+}
+
+void StatementExpressionList() :
+{}
+{
+  StatementExpression() MoreStatementExpressions()
+}
+
+void MoreStatementExpressions() :
+{}
+{
+  [ <COMMA> StatementExpression() MoreStatementExpressions() ]
+}
+
+void ForCondition() :
+{}
+{
+  BooleanExpression()
+}
+
+void ForIterator() :
+{}
+{
+  StatementExpressionList()
+}
+
+void ForeachStatement() :
+{}
+{
+  <FOREACH> <LPAREN> LocalVariableType() <IDENTIFIER> <IN> Expression() <RPAREN> EmbeddedStatement()
+}
+
+void JumpStatement() :
+{}
+{
+  BreakStatement()
+  | ContinueStatement()
+  | GotoStatement()
+  | ReturnStatement()
+  | ThrowStatement()
+}
+
+void BreakStatement() :
+{}
+{
+  <BREAK> <SEMICOLON>
+}
+
+void ContinueStatement() :
+{}
+{
+  <CONTINUE> <SEMICOLON>
+}
+
+void GotoStatement() :
+{}
+{
+  <GOTO> <IDENTIFIER> <SEMICOLON>
+  | <GOTO> <CASE> ConstantExpression() <SEMICOLON>
+  | <GOTO> <_DEFAULT> <SEMICOLON>
+}
+
+void ReturnStatement() :
+{}
+{
+  <RETURN> ExpressionOpt() <SEMICOLON>
+}
+
+void ExpressionOpt() :
+{}
+{
+  [ Expression() ]
+}
+
+void ThrowStatement() :
+{}
+{
+  <THROW> ExpressionOpt() <SEMICOLON>
+}
+
+void TryStatement() :
+{}
+{
+  <TRY> Block() CatchClauseList() FinallyClause()
+  | <TRY> Block() CatchClauseList()
+  | <TRY> Block() FinallyClause()
+}
+
+void CatchClauseList() :
+{}
+{
+  CatchClause() CatchClauseList()
+  | CatchClause()
+}
+
+void CatchClause() :
+{}
+{
+  <CATCH> ExceptionSpecifierOpt() ExceptionFilterOpt() Block()
+}
+
+void ExceptionSpecifierOpt() :
+{}
+{
+  [ ExceptionSpecifier() ]
+}
+
+void ExceptionFilterOpt() :
+{}
+{
+  [ ExceptionFilter() ]
+}
+
+void ExceptionSpecifier() :
+{}
+{
+  <LPAREN> Type() IdentifierOpt() <RPAREN>
+}
+
+void IdentifierOpt() :
+{}
+{
+  [ <IDENTIFIER> ]
+}
+
+void ExceptionFilter() :
+{}
+{
+  <WHEN> <LPAREN> Expression() <RPAREN>
+}
+
+void FinallyClause() :
+{}
+{
+  <FINALLY> Block()
+}
+
+void CheckedStatement() :
+{}
+{
+  <CHECKED> Block()
+}
+
+void UncheckedStatement() :
+{}
+{
+  <UNCHECKED> Block()
+}
+
+void LockStatement() :
+{}
+{
+  <LOCK> <LPAREN> Expression() <RPAREN> EmbeddedStatement()
+}
+
+void UsingStatement() :
+{}
+{
+  <USING> <LPAREN> ResourceAcquisition() <RPAREN> EmbeddedStatement()
+}
+
+void ResourceAcquisition() :
+{}
+{
+  LocalVariableDeclaration()
+  | Expression()
+}
+
+void YieldStatement() :
+{}
+{
+  <YIELD> <RETURN> Expression() <SEMICOLON>
+  | <YIELD> <BREAK> <SEMICOLON>
+}
+
+void EmbeddedStatementUnsafe() :
+{}
+{
+  UnsafeStatement()
+  | FixedStatement()
+}
+
+void UnsafeStatement() :
+{}
+{
+  <UNSAFE> Block()
+}
+
+void FixedStatement() :
+{}
+{
+  <FIXED> <LPAREN> PointerType() FixedPointerDeclarators() <RPAREN> EmbeddedStatement()
+}
+
+void FixedPointerDeclarators() :
+{}
+{
+  FixedPointerDeclarator() MoreFixedPointerDeclarators()
+}
+
+void MoreFixedPointerDeclarators() :
+{}
+{
+  [ <COMMA> FixedPointerDeclarator() MoreFixedPointerDeclarators() ]
+}
+
+void FixedPointerDeclarator() :
+{}
+{
+  <IDENTIFIER> <EQUAL> FixedPointerInitializer()
+}
+
+void FixedPointerInitializer() :
+{}
+{
+  <AMPERSAND> VariableReference()
+  | Expression()
+}
