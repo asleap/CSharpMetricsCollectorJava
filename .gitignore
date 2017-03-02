@@ -1,5 +1,5 @@
 .idea/
+lib/
 out/
 src/csmc/javacc/generated
-lib/
 CSharpMetricsCollectorJava.iml
