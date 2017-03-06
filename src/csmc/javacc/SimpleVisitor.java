@@ -1,9 +1,6 @@
 package csmc.javacc;
 
 import csmc.javacc.generated.*;
-import jdk.nashorn.internal.ir.debug.PrintVisitor;
-
-import java.io.PrintStream;
 
 /**
  * Created by asleap on 02.03.2017.
@@ -1685,6 +1682,12 @@ public class SimpleVisitor implements CSharpParserVisitor {
 
     @Override
     public Object visit(ASTPrimaryNoArrayCreationExpressionPrime2 node, Object data) {
+        visitAllChildren(node, data);
+        return null;
+    }
+
+    @Override
+    public Object visit(ASTIdentifier node, Object data) {
         visitAllChildren(node, data);
         return null;
     }

@@ -289,7 +289,7 @@ void NamespaceMemberDeclarationList() :
 void ExternAliasDirective() :
 {}
 {
-  <EXTERN> <ALIAS> <IDENTIFIER> <SEMICOLON>
+  <EXTERN> <ALIAS> Identifier() <SEMICOLON>
 }
 
 void UsingDirective() :
@@ -303,20 +303,20 @@ void UsingDirective() :
 void UsingAliasDirective() :
 {}
 {
-  <USING> <IDENTIFIER> <EQUAL> NamespaceOrTypeName() <SEMICOLON>
+  <USING> Identifier() <EQUAL> NamespaceOrTypeName() <SEMICOLON>
 }
 
 void NamespaceOrTypeName() :
 {}
 {
-  <IDENTIFIER> TypeArgumentListOpt() NamespaceOrTypeNamePrime()
+  Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime()
   | QualifiedAliasMember() NamespaceOrTypeNamePrime()
 }
 
 void NamespaceOrTypeNamePrime() :
 {}
 {
-  [ <DOT> <IDENTIFIER> TypeArgumentListOpt() NamespaceOrTypeNamePrime() ]
+  [ <DOT> Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime() ]
 }
 
 void TypeArgumentListOpt() :
@@ -516,7 +516,7 @@ void DelegateType() :
 void TypeParameter() :
 {}
 {
-  <IDENTIFIER>
+  Identifier()
 }
 
 void TypeUnsafe() :
@@ -541,7 +541,7 @@ void UnmanagedType() :
 void QualifiedAliasMember() :
 {}
 {
-  <IDENTIFIER> <DBL_COLON> <IDENTIFIER> TypeArgumentListOpt()
+  Identifier() <DBL_COLON> Identifier() TypeArgumentListOpt()
 }
 
 void UsingNamespaceDirective() :
@@ -672,7 +672,7 @@ void NamedArgumentList() :
 void NamedArgument() :
 {}
 {
-  <IDENTIFIER> <EQUAL> AttributeArgumentExpression()
+  Identifier() <EQUAL> AttributeArgumentExpression()
 }
 
 void MoreNamedArguments() :
@@ -703,13 +703,13 @@ void SemicolonOpt() :
 void QualifiedIdentifier() :
 {}
 {
-  <IDENTIFIER> MoreIdentifiers()
+  Identifier() MoreIdentifiers()
 }
 
 void MoreIdentifiers() :
 {}
 {
-  [ <DOT> <IDENTIFIER> MoreIdentifiers() ]
+  [ <DOT> Identifier() MoreIdentifiers() ]
 }
 
 void NamespaceBody() :
@@ -731,7 +731,7 @@ void TypeDeclaration() :
 void ClassDeclaration() :
 {}
 {
-  AttributesOpt() ClassModifierList() PartialOpt() <CLASS> <IDENTIFIER> TypeParameterListOpt() ClassBaseOpt() TypeParameterConstraintsClauseList() ClassBody() SemicolonOpt()
+  AttributesOpt() ClassModifierList() PartialOpt() <CLASS> Identifier() TypeParameterListOpt() ClassBaseOpt() TypeParameterConstraintsClauseList() ClassBody() SemicolonOpt()
 }
 
 void AttributesOpt() :
@@ -978,7 +978,7 @@ void ConstantDeclarators() :
 void ConstantDeclarator() :
 {}
 {
-  <IDENTIFIER> <EQUAL> ConstantExpression()
+  Identifier() <EQUAL> ConstantExpression()
 }
 
 void ConstantExpression() :
@@ -1034,8 +1034,8 @@ void VariableDeclarators() :
 void VariableDeclarator() :
 {}
 {
-  <IDENTIFIER> <EQUAL> VariableInitializer()
-  | <IDENTIFIER>
+  Identifier() <EQUAL> VariableInitializer()
+  | Identifier()
 }
 
 void VariableInitializer() :
@@ -1102,8 +1102,8 @@ void ReturnType() :
 void MemberName() :
 {}
 {
-  <IDENTIFIER>
-  | InterfaceType() <DOT> <IDENTIFIER>
+  Identifier()
+  | InterfaceType() <DOT> Identifier()
 }
 
 void FormalParameterListOpt() :
@@ -1129,7 +1129,7 @@ void FixedParameters() :
 void FixedParameter() :
 {}
 {
-  AttributesOpt() ParameterModifierOpt() Type() <IDENTIFIER> DefaultArgumentOpt()
+  AttributesOpt() ParameterModifierOpt() Type() Identifier() DefaultArgumentOpt()
 }
 
 void ParameterModifierOpt() :
@@ -1167,7 +1167,7 @@ void MoreFixedParameters() :
 void ParameterArray() :
 {}
 {
-  AttributesOpt() <PARAMS> ArrayType() <IDENTIFIER>
+  AttributesOpt() <PARAMS> ArrayType() Identifier()
 }
 
 void MethodBody() :
@@ -1422,7 +1422,7 @@ void OperatorDeclarator() :
 void UnaryOperatorDeclarator() :
 {}
 {
-  Type() <OPERATOR> OverloadableUnaryOperator() <LPAREN> Type() <IDENTIFIER> <RPAREN>
+  Type() <OPERATOR> OverloadableUnaryOperator() <LPAREN> Type() Identifier() <RPAREN>
 }
 
 void OverloadableUnaryOperator() :
@@ -1441,7 +1441,7 @@ void OverloadableUnaryOperator() :
 void BinaryOperatorDeclarator() :
 {}
 {
-  Type() <OPERATOR> OverloadableBinaryOperator() <LPAREN> Type() <IDENTIFIER> <COMMA> Type() <IDENTIFIER> <RPAREN>
+  Type() <OPERATOR> OverloadableBinaryOperator() <LPAREN> Type() Identifier() <COMMA> Type() Identifier() <RPAREN>
 }
 
 void OverloadableBinaryOperator() :
@@ -1468,8 +1468,8 @@ void OverloadableBinaryOperator() :
 void ConversionOperatorDeclarator() :
 {}
 {
-  <IMPLICIT> <OPERATOR> Type() <LPAREN> Type() <IDENTIFIER> <RPAREN>
-  | <EXPLICIT> <OPERATOR> Type() <LPAREN> Type() <IDENTIFIER> <RPAREN>
+  <IMPLICIT> <OPERATOR> Type() <LPAREN> Type() Identifier() <RPAREN>
+  | <EXPLICIT> <OPERATOR> Type() <LPAREN> Type() Identifier() <RPAREN>
 }
 
 void OperatorBody() :
@@ -1512,7 +1512,7 @@ void ConstructorModifierUnsafe() :
 void ConstructorDeclarator() :
 {}
 {
-  <IDENTIFIER> <LPAREN> FormalParameterListOpt() <RPAREN> ConstructorInitializerOpt()
+  Identifier() <LPAREN> FormalParameterListOpt() <RPAREN> ConstructorInitializerOpt()
 }
 
 void ConstructorInitializerOpt() :
@@ -1561,7 +1561,7 @@ void ArgumentNameOpt() :
 void ArgumentName() :
 {}
 {
-  <IDENTIFIER> <COLON>
+  Identifier() <COLON>
 }
 
 void ArgumentValue() :
@@ -1588,7 +1588,7 @@ void ConstructorBody() :
 void DestructorDeclaration() :
 {}
 {
-  AttributesOpt() ExternOpt() <TILDE> <IDENTIFIER> <LPAREN> <RPAREN> DestructorBody()
+  AttributesOpt() ExternOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
   | DestructorDeclarationUnsafe()
 }
 
@@ -1608,8 +1608,8 @@ void DestructorBody() :
 void DestructorDeclarationUnsafe() :
 {}
 {
-  AttributesOpt() ExternOpt() UnsafeOpt() <TILDE> <IDENTIFIER> <LPAREN> <RPAREN> DestructorBody()
-  | AttributesOpt() UnsafeOpt() ExternOpt() <TILDE> <IDENTIFIER> <LPAREN> <RPAREN> DestructorBody()
+  AttributesOpt() ExternOpt() UnsafeOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
+  | AttributesOpt() UnsafeOpt() ExternOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
 }
 
 void UnsafeOpt() :
@@ -1621,7 +1621,7 @@ void UnsafeOpt() :
 void StaticConstructorDeclaration() :
 {}
 {
-  AttributesOpt() StaticConstructorModifiers() <IDENTIFIER> <LPAREN> <RPAREN> StaticConstructorBody()
+  AttributesOpt() StaticConstructorModifiers() Identifier() <LPAREN> <RPAREN> StaticConstructorBody()
 }
 
 void StaticConstructorModifiers() :
@@ -1653,7 +1653,7 @@ void StaticConstructorBody() :
 void StructDeclaration() :
 {}
 {
-  AttributesOpt() StructModifierList() PartialOpt() <STRUCT> <IDENTIFIER> TypeParameterListOpt() StructInterfacesOpt() TypeParameterConstraintsClauseList() StructBody() SemicolonOpt()
+  AttributesOpt() StructModifierList() PartialOpt() <STRUCT> Identifier() TypeParameterListOpt() StructInterfacesOpt() TypeParameterConstraintsClauseList() StructBody() SemicolonOpt()
 }
 
 void StructModifierList() :
@@ -1758,13 +1758,13 @@ void FixedSizeBufferDeclaratorList() :
 void FixedSizeBufferDeclarator() :
 {}
 {
-  <IDENTIFIER> <LBRACKET> ConstantExpression() <RBRACKET>
+  Identifier() <LBRACKET> ConstantExpression() <RBRACKET>
 }
 
 void InterfaceDeclaration() :
 {}
 {
-  AttributesOpt() InterfaceModifierList() PartialOpt() <INTERFACE> <IDENTIFIER> VariantTypeParameterListOpt() InterfaceBaseOpt() TypeParameterConstraintsClauseList() InterfaceBody() SemicolonOpt()
+  AttributesOpt() InterfaceModifierList() PartialOpt() <INTERFACE> Identifier() VariantTypeParameterListOpt() InterfaceBaseOpt() TypeParameterConstraintsClauseList() InterfaceBody() SemicolonOpt()
 }
 
 void InterfaceModifierList() :
@@ -1863,7 +1863,7 @@ void InterfaceMemberDeclaration() :
 void InterfaceMethodDeclaration() :
 {}
 {
-  AttributesOpt() NewOpt() ReturnType() <IDENTIFIER> TypeParameterList() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList() <SEMICOLON>
+  AttributesOpt() NewOpt() ReturnType() Identifier() TypeParameterList() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList() <SEMICOLON>
 }
 
 void NewOpt() :
@@ -1875,7 +1875,7 @@ void NewOpt() :
 void InterfacePropertyDeclaration() :
 {}
 {
-  AttributesOpt() NewOpt() Type() <IDENTIFIER> <LBRACE> InterfaceAccessors() <RBRACE>
+  AttributesOpt() NewOpt() Type() Identifier() <LBRACE> InterfaceAccessors() <RBRACE>
 }
 
 void InterfaceAccessors() :
@@ -1890,7 +1890,7 @@ void InterfaceAccessors() :
 void InterfaceEventDeclaration() :
 {}
 {
-  AttributesOpt() NewOpt() <EVENT> Type() <IDENTIFIER> <SEMICOLON>
+  AttributesOpt() NewOpt() <EVENT> Type() Identifier() <SEMICOLON>
 }
 
 void InterfaceIndexerDeclaration() :
@@ -1902,7 +1902,7 @@ void InterfaceIndexerDeclaration() :
 void EnumDeclaration() :
 {}
 {
-  AttributesOpt() EnumModifierList() <ENUM> <IDENTIFIER> EnumBaseOpt() EnumBody() SemicolonOpt()
+  AttributesOpt() EnumModifierList() <ENUM> Identifier() EnumBaseOpt() EnumBody() SemicolonOpt()
 }
 
 void EnumModifierList() :
@@ -1956,14 +1956,14 @@ void MoreEnumMemberDeclarations() :
 void EnumMemberDeclaration() :
 {}
 {
-  AttributesOpt() <IDENTIFIER> <EQUAL> ConstantExpression()
-  | AttributesOpt() <IDENTIFIER>
+  AttributesOpt() Identifier() <EQUAL> ConstantExpression()
+  | AttributesOpt() Identifier()
 }
 
 void DelegateDeclaration() :
 {}
 {
-  AttributesOpt() DelegateModifierList() <DELEGATE> ReturnType() <IDENTIFIER> VariantTypeParameterListOpt() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList() SemicolonOpt()
+  AttributesOpt() DelegateModifierList() <DELEGATE> ReturnType() Identifier() VariantTypeParameterListOpt() <LPAREN> FormalParameterListOpt() <RPAREN> TypeParameterConstraintsClauseList() SemicolonOpt()
 }
 
 void DelegateModifierList() :
@@ -2176,17 +2176,17 @@ void PrimaryExpression() :
   PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
   | PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
   | SizeofExpression() PrimaryExpressionPrime()
-  | PredefinedType() <DOT> <IDENTIFIER> TypeArgumentListOpt() PrimaryExpressionPrime()
-  | QualifiedAliasMember() <DOT> <IDENTIFIER> PrimaryExpressionPrime()
+  | PredefinedType() <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
+  | QualifiedAliasMember() <DOT> Identifier() PrimaryExpressionPrime()
   | ArrayCreationExpression() PrimaryExpressionPrime()
 }
 
 void PrimaryExpressionPrime() :
 {}
 {
-  <DOT> <IDENTIFIER> TypeArgumentListOpt() PrimaryExpressionPrime()
+  <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
   | <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
-  | <MINUS_GREATER> <IDENTIFIER> PrimaryExpressionPrime()
+  | <MINUS_GREATER> Identifier() PrimaryExpressionPrime()
    // | <DBL_PLUS> PrimaryExpressionPrime()
    // | <DBL_MINUS> PrimaryExpressionPrime()
   | {}
@@ -2245,21 +2245,27 @@ void PrimaryNoArrayCreationExpressionPrime2() :
 }
 
 void Literal() :
-{}
+{ Token t; }
 {
-  <TRUE>
-  | <FALSE>
-  | <INTEGER_LITERAL>
-  | <REAL_LITERAL>
-  | <CHARACTER_LITERAL>
-  | <STRING_LITERAL>
-  | <NULL>
+  t = <TRUE>                    { jjtThis.value = t.image; }
+  | t = <FALSE>                 { jjtThis.value = t.image; }
+  | t = <INTEGER_LITERAL>       { jjtThis.value = t.image; }
+  | t = <REAL_LITERAL>          { jjtThis.value = t.image; }
+  | t = <CHARACTER_LITERAL>     { jjtThis.value = t.image; }
+  | t = <STRING_LITERAL>        { jjtThis.value = t.image; }
+  | t = <NULL>                  { jjtThis.value = t.image; }
+}
+
+void Identifier() :
+{ Token t; }
+{
+  t = <IDENTIFIER>              { jjtThis.value = t.image; }
 }
 
 void SimpleName() :
 {}
 {
-  <IDENTIFIER> TypeArgumentListOpt()
+  Identifier() TypeArgumentListOpt()
 }
 
 void ParanthesizedExpression() :
@@ -2271,9 +2277,9 @@ void ParanthesizedExpression() :
 void MemberAccess() :
 {}
 {
-  PrimaryExpression() <DOT> <IDENTIFIER> TypeArgumentListOpt()
-  | PredefinedType() <DOT> <IDENTIFIER> TypeArgumentListOpt()
-  | QualifiedAliasMember() <DOT> <IDENTIFIER>
+  PrimaryExpression() <DOT> Identifier() TypeArgumentListOpt()
+  | PredefinedType() <DOT> Identifier() TypeArgumentListOpt()
+  | QualifiedAliasMember() <DOT> Identifier()
 }
 
 void InvocationExpression() :
@@ -2309,7 +2315,7 @@ void ThisAccess() :
 void BaseAccess() :
 {}
 {
-  <BASE> <DOT> <IDENTIFIER>
+  <BASE> <DOT> Identifier()
   | <BASE> <LBRACKET> ExpressionList() <RBRACKET>
 }
 
@@ -2379,7 +2385,7 @@ void MemberInitializer() :
 void InitializerTarget() :
 {}
 {
-  <IDENTIFIER>
+  Identifier()
   <LBRACKET> ArgumentList() <RBRACKET>
 }
 
@@ -2456,7 +2462,7 @@ void MoreMemberDeclarators() :
 void MemberDeclarator() :
 {}
 {
-  <IDENTIFIER> <EQUAL> Expression()
+  Identifier() <EQUAL> Expression()
   | SimpleName()
   | MemberAccess()
   | BaseAccess()
@@ -2466,8 +2472,8 @@ void MemberDeclarator() :
 void NullConditionalMemberAccess() :
 {}
 {
-  PrimaryExpression() NullConditionalOperationsOpt() <QUESTION> <DOT> <IDENTIFIER> TypeArgumentListOpt()
-  | PrimaryExpression() NullConditionalOperationsOpt() <DOT> <IDENTIFIER> TypeArgumentListOpt()
+  PrimaryExpression() NullConditionalOperationsOpt() <QUESTION> <DOT> Identifier() TypeArgumentListOpt()
+  | PrimaryExpression() NullConditionalOperationsOpt() <DOT> Identifier() TypeArgumentListOpt()
 }
 
 void NullConditionalOperationsOpt() :
@@ -2479,16 +2485,16 @@ void NullConditionalOperationsOpt() :
 void NullConditionalOperations() :
 {}
 {
-  <QUESTION> <DOT> <IDENTIFIER> TypeArgumentListOpt() NullConditionalOperationsPrime()
+  <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
 }
 
 void NullConditionalOperationsPrime() :
 {}
 {
-  <QUESTION> <DOT> <IDENTIFIER> TypeArgumentListOpt() NullConditionalOperationsPrime()
+  <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
-  | <DOT> <IDENTIFIER> TypeArgumentListOpt() NullConditionalOperationsPrime()
+  | <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
   | <LPAREN> ArgumentListOpt() <RPAREN> NullConditionalOperationsPrime()
   | {}
@@ -2505,14 +2511,14 @@ void TypeofExpression() :
 void UnboundTypeName() :
 {}
 {
-  <IDENTIFIER> GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
-  | <IDENTIFIER> <DBL_COLON> <IDENTIFIER> GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
+  Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
+  | Identifier() <DBL_COLON> Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
 }
 
 void UnboundTypeNamePrime() :
 {}
 {
-  [ <DOT> <IDENTIFIER> GenericDimensionSpecifierOpt() UnboundTypeNamePrime() ]
+  [ <DOT> Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime() ]
 }
 
 void GenericDimensionSpecifierOpt() :
@@ -2560,14 +2566,14 @@ void NameofExpression() :
 void NamedEntity() :
 {}
 {
-  NamedEntityTargetPrime() <DOT> <IDENTIFIER> TypeArgumentListOpt() NamedEntityPrime()
+  NamedEntityTargetPrime() <DOT> Identifier() TypeArgumentListOpt() NamedEntityPrime()
   | SimpleName() NamedEntityPrime()
 }
 
 void NamedEntityPrime() :
 {}
 {
-  [ <DOT> <IDENTIFIER> TypeArgumentListOpt() NamedEntityPrime() ]
+  [ <DOT> Identifier() TypeArgumentListOpt() NamedEntityPrime() ]
 }
 
 void NamedEntityTargetPrime() : // Without NamedEntity
@@ -2648,7 +2654,7 @@ void MoreExplicitAnonymousFunctionParameters() :
 void ExplicitAnonymousFunctionParameter() :
 {}
 {
-  AnonymousFunctionParameterModifierOpt() Type() <IDENTIFIER>
+  AnonymousFunctionParameterModifierOpt() Type() Identifier()
 }
 
 void AnonymousFunctionParameterModifierOpt() :
@@ -2675,7 +2681,7 @@ void PrimaryNoArrayCreationExpressionUnsafe() :
 void PointerMemberAccess() :
 {}
 {
-  PrimaryExpression() <MINUS_GREATER> <IDENTIFIER>
+  PrimaryExpression() <MINUS_GREATER> Identifier()
 }
 
 void PointerElementAccess() :
@@ -2825,7 +2831,7 @@ void MoreImplicitAnonymousFunctionParameters() :
 void ImplicitAnonymousFunctionParameter() :
 {}
 {
-  <IDENTIFIER>
+  Identifier()
 }
 
 void AnonymousFunctionBody() :
@@ -2844,7 +2850,7 @@ void QueryExpression() :
 void FromClause() :
 {}
 {
-  <FROM> TypeOpt() <IDENTIFIER> <IN> Expression()
+  <FROM> TypeOpt() Identifier() <IN> Expression()
 }
 
 void TypeOpt() :
@@ -2892,7 +2898,7 @@ void QueryBodyClause() :
 void LetClause() :
 {}
 {
-  <LET> <IDENTIFIER> <EQUAL> Expression()
+  <LET> Identifier() <EQUAL> Expression()
 }
 
 void WhereClause() :
@@ -2910,13 +2916,13 @@ void BooleanExpression() :
 void JoinClause() :
 {}
 {
-  <JOIN> TypeOpt() <IDENTIFIER> <IN> Expression() <ON> Expression() <EQUALS> Expression()
+  <JOIN> TypeOpt() Identifier() <IN> Expression() <ON> Expression() <EQUALS> Expression()
 }
 
 void JoinIntoClause() :
 {}
 {
-  <JOIN> TypeOpt() <IDENTIFIER> <IN> Expression() <ON> Expression() <EQUALS> Expression() <INTO> <IDENTIFIER>
+  <JOIN> TypeOpt() Identifier() <IN> Expression() <ON> Expression() <EQUALS> Expression() <INTO> Identifier()
 }
 
 void OrderbyClause() :
@@ -2978,7 +2984,7 @@ void GroupClause() :
 void QueryContinuation() :
 {}
 {
-  <INTO> <IDENTIFIER> QueryBody()
+  <INTO> Identifier() QueryBody()
 }
 
 void Assignment() :
@@ -3014,7 +3020,7 @@ void Statement() :
 void LabeledStatement() :
 {}
 {
-  <IDENTIFIER> <COLON> Statement()
+  Identifier() <COLON> Statement()
 }
 
 void DeclarationStatement() :
@@ -3052,8 +3058,8 @@ void LocalVariableDeclaratorsPrime() :
 void LocalVariableDeclarator() :
 {}
 {
-  <IDENTIFIER> <EQUAL> LocalVariableInitializer()
-  | <IDENTIFIER>
+  Identifier() <EQUAL> LocalVariableInitializer()
+  | Identifier()
 }
 
 void LocalVariableInitializer() :
@@ -3270,7 +3276,7 @@ void ForIterator() :
 void ForeachStatement() :
 {}
 {
-  <FOREACH> <LPAREN> LocalVariableType() <IDENTIFIER> <IN> Expression() <RPAREN> EmbeddedStatement()
+  <FOREACH> <LPAREN> LocalVariableType() Identifier() <IN> Expression() <RPAREN> EmbeddedStatement()
 }
 
 void JumpStatement() :
@@ -3298,7 +3304,7 @@ void ContinueStatement() :
 void GotoStatement() :
 {}
 {
-  <GOTO> <IDENTIFIER> <SEMICOLON>
+  <GOTO> Identifier() <SEMICOLON>
   | <GOTO> <CASE> ConstantExpression() <SEMICOLON>
   | <GOTO> <_DEFAULT> <SEMICOLON>
 }
@@ -3363,7 +3369,7 @@ void ExceptionSpecifier() :
 void IdentifierOpt() :
 {}
 {
-  [ <IDENTIFIER> ]
+  [ Identifier() ]
 }
 
 void ExceptionFilter() :
@@ -3450,7 +3456,7 @@ void MoreFixedPointerDeclarators() :
 void FixedPointerDeclarator() :
 {}
 {
-  <IDENTIFIER> <EQUAL> FixedPointerInitializer()
+  Identifier() <EQUAL> FixedPointerInitializer()
 }
 
 void FixedPointerInitializer() :
