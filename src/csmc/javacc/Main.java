@@ -16,7 +16,7 @@ public class Main {
         CSharpParser parser = new CSharpParser(new FileInputStream("tests/Test1.cs"));
 
         SimpleNode parseTree = parser.Input();
-        parseTree.dump("");
+//        parseTree.dump("");
 
         PrintVisitor pv = new PrintVisitor(System.out);
         parseTree.jjtAccept(pv, null);

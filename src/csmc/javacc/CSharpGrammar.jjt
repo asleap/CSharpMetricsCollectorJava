@@ -241,7 +241,7 @@ TOKEN :
 }
 
 /** Root production. */
-SimpleNode Input() :
+ASTInput Input() :
 {}
 {
   Start() <EOF>
@@ -306,242 +306,266 @@ void UsingAliasDirective() :
   <USING> Identifier() <EQUAL> NamespaceOrTypeName() <SEMICOLON>
 }
 
-void NamespaceOrTypeName() :
-{}
+ASTNamespaceOrTypeName NamespaceOrTypeName() :
+{ SimpleNode sn1, sn2, sn3; }
 {
-  Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime()
-  | QualifiedAliasMember() NamespaceOrTypeNamePrime()
+  sn1 = Identifier() sn2 = TypeArgumentListOpt() sn3 = NamespaceOrTypeNamePrime() {
+    jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue() + (String) sn3.jjtGetValue();
+    return jjtThis;
+  }
+
+  | sn1 = QualifiedAliasMember() sn2 = NamespaceOrTypeNamePrime() {
+    jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue();
+    return jjtThis;
+  }
 }
 
-void NamespaceOrTypeNamePrime() :
-{}
+ASTNamespaceOrTypeNamePrime NamespaceOrTypeNamePrime() :
+{ Token t; SimpleNode sn1, sn2, sn3; }
 {
-  [ <DOT> Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime() ]
+  t = <DOT> sn1 = Identifier() sn2 = TypeArgumentListOpt() sn3 = NamespaceOrTypeNamePrime() {
+    jjtThis.value = t.image + (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue() + (String) sn3.jjtGetValue();
+    return jjtThis;
+  }
+
+  | {}                                              { jjtThis.value = ""; return jjtThis; }
 }
 
-void TypeArgumentListOpt() :
-{}
+ASTTypeArgumentListOpt TypeArgumentListOpt() :
+{ SimpleNode sn; }
 {
-  [ TypeArgumentList() ]
+  sn = TypeArgumentList()                           { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | {}                                              { jjtThis.value = ""; return jjtThis; }
 }
 
-void TypeArgumentList() :
-{}
+ASTTypeArgumentList TypeArgumentList() :
+{ Token t1, t2; SimpleNode sn; }
 {
-  <LESS> TypeArgument() <GREATER>
+  t1 = <LESS> sn = TypeArguments() t2 = <GREATER>   { jjtThis.value = t1.image + (String) sn.jjtGetValue() + t2.image; return jjtThis; }
 }
 
-void TypeArguments() :
-{}
+ASTTypeArguments TypeArguments() :
+{ SimpleNode sn1, sn2; }
 {
-  TypeArgument() MoreTypeArguments()
+  sn1 = TypeArgument() sn2 = MoreTypeArguments()    { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
 }
 
-void MoreTypeArguments() :
-{}
+ASTMoreTypeArguments MoreTypeArguments() :
+{ Token t; SimpleNode sn1, sn2; }
 {
-  [ <COMMA> TypeArgument() MoreTypeArguments() ]
+  t = <COMMA> sn1 = TypeArgument() sn2 = MoreTypeArguments() {
+    jjtThis.value = t.image + (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue();
+    return jjtThis;
+  }
+
+  | {}                                              { jjtThis.value = ""; return jjtThis; }
 }
 
-void TypeArgument() :
-{}
+ASTTypeArgument TypeArgument() :
+{ SimpleNode sn; }
 {
-  Type()
+  sn = Type()                                       { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void Type() :
-{}
+ASTType Type() :
+{ Token t1, t2; SimpleNode sn1, sn2; }
 {
   // ValueType()
-  TypeName() TypePrime()
-  | SimpleType() TypePrime()
-  | ClassType() TypePrime()
-  | InterfaceType() TypePrime()
-  | DelegateType() TypePrime()
-  | TypeParameter() TypePrime()
-  | <VOID> <ASTERISK> TypePrime()
+  sn1 = TypeName() sn2 = TypePrime()                { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | sn1 = SimpleType() sn2 = TypePrime()            { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | sn1 = ClassType() sn2 = TypePrime()             { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | sn1 = InterfaceType() sn2 = TypePrime()         { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | sn1 = DelegateType() sn2 = TypePrime()          { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | sn1 = TypeParameter() sn2 = TypePrime()         { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | t1 = <VOID> t2 = <ASTERISK> sn2 = TypePrime()   { jjtThis.value = t1.image + t2.image + (String) sn2.jjtGetValue(); return jjtThis; }
 }
 
-void TypePrime() :
-{}
+ASTTypePrime TypePrime() :
+{ Token t; SimpleNode sn1, sn2; }
 {
-  <QUESTION> TypePrime()
-  | RankSpecifierList() TypePrime()
-  | <ASTERISK> TypePrime()
-  | {}
+  t = <QUESTION> sn2 = TypePrime()                  { jjtThis.value = t.image + (String) sn2.jjtGetValue(); return jjtThis; }
+  | sn1 = RankSpecifierList() sn2 = TypePrime()     { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | t = <ASTERISK> sn2 = TypePrime()                { jjtThis.value = t.image + (String) sn2.jjtGetValue(); return jjtThis; }
+  | {}                                              { jjtThis.value = ""; return jjtThis; }
 }
 
-void ValueType() :
-{}
+ASTValueType ValueType() :
+{ SimpleNode sn; }
 {
-  StructType()
-  | EnumType()
+  sn = StructType()                                 { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = EnumType()                                 { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void StructType() :
-{}
+ASTStructType StructType() :
+{ SimpleNode sn; }
 {
-  NullableType()
-  | TypeName()
-  | SimpleType()
+  sn = NullableType()                               { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = TypeName()                                 { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = SimpleType()                               { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void TypeName() :
-{}
+ASTTypeName TypeName() :
+{ SimpleNode sn; }
 {
-  NamespaceOrTypeName()
+  sn = NamespaceOrTypeName()                        { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void SimpleType() :
-{}
+ASTSimpleType SimpleType() :
+{ Token t; SimpleNode sn; }
 {
-  NumericType()
-  | <BOOL>
+  sn = NumericType()                                { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | t = <BOOL>                                      { jjtThis.value = t.image; return jjtThis; }
 }
 
-void NumericType() :
-{}
+ASTNumericType NumericType() :
+{ Token t; SimpleNode sn; }
 {
-  IntegralType()
-  | FloatingPointType()
-  | <DECIMAL>
+  sn = IntegralType()                               { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = FloatingPointType()                        { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | t = <DECIMAL>                                   { jjtThis.value = t.image; return jjtThis; }
 }
 
-void IntegralType() :
-{}
+ASTIntegralType IntegralType() :
+{ Token t; }
 {
-  <SBYTE>
-  | <BYTE>
-  | <SHORT>
-  | <USHORT>
-  | <INT>
-  | <UINT>
-  | <LONG>
-  | <ULONG>
-  | <CHAR>
+  t = <SBYTE>                                           { jjtThis.value = t.image; return jjtThis; }
+  | t = <BYTE>                                          { jjtThis.value = t.image; return jjtThis; }
+  | t = <SHORT>                                         { jjtThis.value = t.image; return jjtThis; }
+  | t = <USHORT>                                        { jjtThis.value = t.image; return jjtThis; }
+  | t = <INT>                                           { jjtThis.value = t.image; return jjtThis; }
+  | t = <UINT>                                          { jjtThis.value = t.image; return jjtThis; }
+  | t = <LONG>                                          { jjtThis.value = t.image; return jjtThis; }
+  | t = <ULONG>                                         { jjtThis.value = t.image; return jjtThis; }
+  | t = <CHAR>                                          { jjtThis.value = t.image; return jjtThis; }
 }
 
-void FloatingPointType() :
-{}
+ASTFloatingPointType FloatingPointType() :
+{ Token t; }
 {
-  <FLOAT>
-  | <DOUBLE>
+  t = <FLOAT>                                       { jjtThis.value = t.image; return jjtThis; }
+  | t = <DOUBLE>                                    { jjtThis.value = t.image; return jjtThis; }
 }
 
-void NullableType() :
-{}
+ASTNullableType NullableType() :
+{ Token t; SimpleNode sn; }
 {
-  NonNullableValueType() <QUESTION>
+  sn = NonNullableValueType() t = <QUESTION>        { jjtThis.value = (String) sn.jjtGetValue() + t.image; return jjtThis; }
 }
 
-void NonNullableValueType() :
-{}
+ASTNonNullableValueType NonNullableValueType() :
+{ SimpleNode sn; }
 {
-  Type()
+  sn = Type()                                       { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void EnumType() :
-{}
+ASTEnumType EnumType() :
+{ SimpleNode sn; }
 {
-  TypeName()
+  sn = TypeName()                                   { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void ReferenceType() :
-{}
+ASTReferenceType ReferenceType() :
+{ SimpleNode sn; }
 {
-  ClassType()
-  | InterfaceType()
-  | ArrayType()
-  | DelegateType()
+  sn = ClassType()                                  { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = InterfaceType()                            { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = ArrayType()                                { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | sn = DelegateType()                             { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void ClassType() :
-{}
+ASTClassType ClassType() :
+{ Token t; SimpleNode sn; }
 {
-  TypeName()
-  | <OBJECT>
-  | <DYNAMIC>
-  | <STRING>
+  sn = TypeName()                                   { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | t = <OBJECT>                                    { jjtThis.value = t.image; return jjtThis; }
+  | t = <DYNAMIC>                                   { jjtThis.value = t.image; return jjtThis; }
+  | t = <STRING>                                    { jjtThis.value = t.image; return jjtThis; }
 }
 
-void InterfaceType() :
-{}
+ASTInterfaceType InterfaceType() :
+{ SimpleNode sn; }
 {
-  TypeName()
+  sn = TypeName()                                        { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void ArrayType() :
-{}
+ASTArrayType ArrayType() :
+{ SimpleNode sn1, sn2; }
 {
-  NonArrayType() RankSpecifierList()
+  sn1 = NonArrayType() sn2 = RankSpecifierList()    { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
 }
 
-void NonArrayType() :
-{}
+ASTNonArrayType NonArrayType() :
+{ SimpleNode sn; }
 {
-  Type()
+  sn = Type()                                       { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void RankSpecifierList() :
-{}
+ASTRankSpecifierList RankSpecifierList() :
+{ SimpleNode sn1, sn2; }
 {
-  RankSpecifier()
-  | RankSpecifier() RankSpecifierList()
+  sn1 = RankSpecifier()                             { jjtThis.value = sn1.jjtGetValue(); return jjtThis; }
+  | sn1 = RankSpecifier() sn2 = RankSpecifierList() { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
 }
 
-void RankSpecifier() :
-{}
+ASTRankSpecifier RankSpecifier() :
+{ Token t1, t2; SimpleNode sn; }
 {
-  <LBRACKET> DimSeparatorList() <RBRACKET>
+  t1 = <LBRACKET> sn = DimSeparatorList() t2 = <RBRACKET> {
+    jjtThis.value = t1.image + (String) sn.jjtGetValue() + t2.image; return jjtThis;
+  }
 }
 
-void DimSeparatorList() :
-{}
+ASTDimSeparatorList DimSeparatorList() :
+{ SimpleNode sn1, sn2; }
 {
-  [ DimSeparator() DimSeparatorList() ]
+  sn1 = DimSeparator() sn2 = DimSeparatorList()     { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
+  | {}                                              { jjtThis.value = ""; return jjtThis; }
 }
 
-void DimSeparator() :
-{}
+ASTDimSeparator DimSeparator() :
+{ Token t; }
 {
-  <COMMA>
+  t = <COMMA>                                           { jjtThis.value = t.image; return jjtThis; }
 }
 
-void DelegateType() :
-{}
+ASTDelegateType DelegateType() :
+{ SimpleNode sn; }
 {
-  TypeName()
+  sn = TypeName()                                       { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void TypeParameter() :
-{}
+ASTTypeParameter TypeParameter() :
+{ SimpleNode sn; }
 {
-  Identifier()
+  sn = Identifier()                                     { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void TypeUnsafe() :
-{}
+ASTTypeUnsafe TypeUnsafe() :
+{ SimpleNode sn; }
 {
-  PointerType()
+  sn = PointerType()                                    { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void PointerType() :
-{}
+ASTPointerType PointerType() :
+{ Token t1, t2; SimpleNode sn; }
 {
-  UnmanagedType() <ASTERISK>
-  | <VOID> <ASTERISK>
+  sn = UnmanagedType() t2 = <ASTERISK>                  { jjtThis.value = (String) sn.jjtGetValue() + t2.image; return jjtThis; }
+  | t1 = <VOID> t2 = <ASTERISK>                         { jjtThis.value = t1.image + t2.image; return jjtThis; }
 }
 
-void UnmanagedType() :
-{}
+ASTUnmanagedType UnmanagedType() :
+{ SimpleNode sn; }
 {
-  Type()
+  sn = Type()                                           { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
 }
 
-void QualifiedAliasMember() :
-{}
+ASTQualifiedAliasMember QualifiedAliasMember() :
+{ Token t; SimpleNode sn1, sn2, sn3;}
 {
-  Identifier() <DBL_COLON> Identifier() TypeArgumentListOpt()
+  sn1 = Identifier() t = <DBL_COLON> sn2 = Identifier() sn3 = TypeArgumentListOpt() {
+    jjtThis.value = (String) sn1.jjtGetValue() + t.image + (String) sn2.jjtGetValue() + (String) sn3.jjtGetValue();
+    return jjtThis;
+  }
 }
 
 void UsingNamespaceDirective() :
@@ -2256,10 +2280,10 @@ void Literal() :
   | t = <NULL>                  { jjtThis.value = t.image; }
 }
 
-void Identifier() :
+SimpleNode Identifier() :
 { Token t; }
 {
-  t = <IDENTIFIER>              { jjtThis.value = t.image; }
+  t = <IDENTIFIER>              { jjtThis.value = t.image; return jjtThis; }
 }
 
 void SimpleName() :
