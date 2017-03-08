@@ -13,7 +13,7 @@ import java.io.FileNotFoundException;
 
 public class Main {
     public static void main(String[] args) throws ParseException, FileNotFoundException {
-        CSharpParser parser = new CSharpParser(new FileInputStream("tests/Test1.cs"));
+        CSharpParser parser = new CSharpParser(new FileInputStream("tests/Test2.cs"));
 
         SimpleNode parseTree = parser.Input();
         parseTree.dump("");

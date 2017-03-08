@@ -48,15 +48,15 @@ namespace My
             {
                 int i = sizeof(int);
                 ++i;
-                var s1 = $"x {1 , -2 :d}";
-                var s2 = $@"x {1 , -2 :d}";
+                // var s1 = $"x {1 , -2 :d}";
+                // var s2 = $@"x {1 , -2 :d}";
             }
 
             const int? local = int.MaxValue;
             const Guid? local0 = new Guid(r.ToString());
 
-            var привет = local;
-            var мир = local;
+//            var привет = local;
+//            var мир = local;
             var local3 = 0, local4 = 1;
             local3 = local4 = 1;
             var local5 = null as Action ?? null;
@@ -73,7 +73,7 @@ namespace My
             bool @bool;
             byte @byte;
             char @char = 'c', \u0066 = '\u0066', hexchar = '\x0130', hexchar2 = (char)0xBAD;
-            string \U00000065 = "\U00000065";
+//            string \U00000065 = "\U00000065";
             decimal @decimal = 1.44M;
             @decimal = 1.2m;
             dynamic @dynamic;
@@ -93,35 +93,35 @@ namespace My
             ulong @ulong;
             ushort @ushort;
             
-            dynamic dynamic = local5;
-            var add = 0;
-            var alias = 0;
-            var arglist = 0;
-            var ascending = 0;
-            var async = 0;
-            var await = 0;
-            var by = 0;
-            var descending = 0;
-            var dynamic = 0;
-            var equals = 0;
-            var from = 0;
-            var get = 0;
-            var group = 0;
-            var into = 0;
-            var join = 0;
-            var let = 0;
-            var nameof = 0;
-            var on = 0;
-            var orderby = 0;
-            var partial = 0;
-            var remove = 0;
-            var select = 0;
-            var set = 0;
-            var when = 0;
-            var where = 0;
-            var yield = 0;
+//            dynamic dynamic = local5;
+//            var add = 0;
+//            var alias = 0;
+//            var arglist = 0;
+//            var ascending = 0;
+//            var async = 0;
+//            var await = 0;
+//            var by = 0;
+//            var descending = 0;
+//            var dynamic = 0;
+//            var equals = 0;
+//            var from = 0;
+//            var get = 0;
+//            var group = 0;
+//            var into = 0;
+//            var join = 0;
+//            var let = 0;
+//            var nameof = 0;
+//            var on = 0;
+//            var orderby = 0;
+//            var partial = 0;
+//            var remove = 0;
+//            var select = 0;
+//            var set = 0;
+//            var when = 0;
+//            var where = 0;
+//            var yield = 0;
             var __ = 0;
-            where = yield = 0;
+//            where = yield = 0;
 
             if (i > 0)
             {
@@ -132,7 +132,7 @@ namespace My
                 throw new Exception();
             }
             var o1 = new MyObject();
-            var o2 = new MyObject(var);
+            // var o2 = new MyObject(var);
             var o3 = new MyObject { A = i };
             var o4 = new MyObject(@dynamic)
             {

@@ -132,17 +132,17 @@ public class SimpleVisitor implements CSharpParserVisitor {
         return null;
     }
 
-    @Override
-    public Object visit(ASTValueType node, Object data) {
-        visitAllChildren(node, data);
-        return null;
-    }
-
-    @Override
-    public Object visit(ASTStructType node, Object data) {
-        visitAllChildren(node, data);
-        return null;
-    }
+//    @Override
+//    public Object visit(ASTValueType node, Object data) {
+//        visitAllChildren(node, data);
+//        return null;
+//    }
+//
+//    @Override
+//    public Object visit(ASTStructType node, Object data) {
+//        visitAllChildren(node, data);
+//        return null;
+//    }
 
     @Override
     public Object visit(ASTTypeName node, Object data) {
@@ -192,11 +192,11 @@ public class SimpleVisitor implements CSharpParserVisitor {
         return null;
     }
 
-    @Override
-    public Object visit(ASTReferenceType node, Object data) {
-        visitAllChildren(node, data);
-        return null;
-    }
+//    @Override
+//    public Object visit(ASTReferenceType node, Object data) {
+//        visitAllChildren(node, data);
+//        return null;
+//    }
 
     @Override
     public Object visit(ASTClassType node, Object data) {
@@ -2774,6 +2774,24 @@ public class SimpleVisitor implements CSharpParserVisitor {
 
     @Override
     public Object visit(ASTFixedPointerInitializer node, Object data) {
+        visitAllChildren(node, data);
+        return null;
+    }
+
+    @Override
+    public Object visit(ASTIndexerDeclaratorLookahead node, Object data) {
+        visitAllChildren(node, data);
+        return null;
+    }
+
+    @Override
+    public Object visit(ASTDestructorDeclarationLookahead node, Object data) {
+        visitAllChildren(node, data);
+        return null;
+    }
+
+    @Override
+    public Object visit(ASTMethodHeaderLookahead node, Object data) {
         visitAllChildren(node, data);
         return null;
     }

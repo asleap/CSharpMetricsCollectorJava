@@ -21,6 +21,13 @@ public class PrintVisitor extends SimpleVisitor {
     }
 
     @Override
+    public Object visit(ASTStatement node, Object data) {
+        Object result = super.visit(node, data);
+        System.out.println(node.toString());
+        return result;
+    }
+
+    @Override
     public Object visit(ASTNamespaceOrTypeName node, Object data) {
         data = "";
         super.visit(node, data);

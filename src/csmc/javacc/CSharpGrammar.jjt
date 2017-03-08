@@ -1,5 +1,5 @@
 options {
-  LOOKAHEAD = 5;
+  LOOKAHEAD = 3;
   CHOICE_AMBIGUITY_CHECK = 2;
   OTHER_AMBIGUITY_CHECK = 1;
   STATIC = true;
@@ -60,7 +60,7 @@ TOKEN :
   | < ALIAS: "alias" >
   | < AS: "as" >
   | < ASCENDING: "ascending" >
-  | < ASSEMBLY: "assebmly" >
+  | < ASSEMBLY: "assembly" >
   | < AWAIT: "await" >
   | < BASE: "base" >
   | < BOOL: "bool" >
@@ -295,9 +295,9 @@ void ExternAliasDirective() :
 void UsingDirective() :
 {}
 {
-  UsingAliasDirective()
+  LOOKAHEAD( <USING> Identifier() <EQUAL> ) UsingAliasDirective()
+  | LOOKAHEAD( <USING> <STATIC> ) UsingStaticDirective()
   | UsingNamespaceDirective()
-  | UsingStaticDirective()
 }
 
 void UsingAliasDirective() :
@@ -309,26 +309,29 @@ void UsingAliasDirective() :
 void NamespaceOrTypeName() :
 {}
 {
-  Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime()
-  | QualifiedAliasMember() NamespaceOrTypeNamePrime()
+  LOOKAHEAD( Identifier() <DBL_COLON> ) QualifiedAliasMember() NamespaceOrTypeNamePrime()
+  | Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime()
+
 }
 
 void NamespaceOrTypeNamePrime() :
 {}
 {
-  [ <DOT> Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime() ]
+  <DOT> Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime()
+  | {}
 }
 
 void TypeArgumentListOpt() :
 {}
 {
-  [ TypeArgumentList() ]
+  TypeArgumentList()
+  | {}
 }
 
 void TypeArgumentList() :
 {}
 {
-  <LESS> TypeArgument() <GREATER>
+  <LESS> TypeArguments() <GREATER>
 }
 
 void TypeArguments() :
@@ -352,13 +355,12 @@ void TypeArgument() :
 void Type() :
 {}
 {
-  // ValueType()
-  TypeName() TypePrime()
-  | SimpleType() TypePrime()
+  // TypeName() TypePrime()
+  SimpleType() TypePrime()
   | ClassType() TypePrime()
-  | InterfaceType() TypePrime()
-  | DelegateType() TypePrime()
-  | TypeParameter() TypePrime()
+  // | InterfaceType() TypePrime()
+  // | DelegateType() TypePrime()
+  // | TypeParameter() TypePrime()
   | <VOID> <ASTERISK> TypePrime()
 }
 
@@ -371,20 +373,20 @@ void TypePrime() :
   | {}
 }
 
-void ValueType() :
-{}
-{
-  StructType()
-  | EnumType()
-}
+//void ValueType() :
+//{}
+//{
+//  StructType()
+//  | EnumType()
+//}
 
-void StructType() :
-{}
-{
-  NullableType()
-  | TypeName()
-  | SimpleType()
-}
+//void StructType() :
+//{}
+//{
+//  NullableType()
+//  | TypeName()
+//  | SimpleType()
+//}
 
 void TypeName() :
 {}
@@ -446,14 +448,14 @@ void EnumType() :
   TypeName()
 }
 
-void ReferenceType() :
-{}
-{
-  ClassType()
-  | InterfaceType()
-  | ArrayType()
-  | DelegateType()
-}
+//void ReferenceType() :
+//{}
+//{
+//  ClassType()
+//  | InterfaceType()
+//  | ArrayType()
+//  | DelegateType()
+//}
 
 void ClassType() :
 {}
@@ -485,8 +487,8 @@ void NonArrayType() :
 void RankSpecifierList() :
 {}
 {
-  RankSpecifier()
-  | RankSpecifier() RankSpecifierList()
+  LOOKAHEAD( RankSpecifier() RankSpecifierList() ) RankSpecifier() RankSpecifierList()
+  | RankSpecifier()
 }
 
 void RankSpecifier() :
@@ -498,7 +500,8 @@ void RankSpecifier() :
 void DimSeparatorList() :
 {}
 {
-  [ DimSeparator() DimSeparatorList() ]
+  DimSeparator() DimSeparatorList()
+  | {}
 }
 
 void DimSeparator() :
@@ -528,7 +531,7 @@ void TypeUnsafe() :
 void PointerType() :
 {}
 {
-  UnmanagedType() <ASTERISK>
+  LOOKAHEAD( UnmanagedType() <ASTERISK> ) UnmanagedType() <ASTERISK>
   | <VOID> <ASTERISK>
 }
 
@@ -571,15 +574,17 @@ void GlobalAttributes() :
 void GlobalAttributesSectionList() :
 {}
 {
-  GlobalAttributesSection() GlobalAttributesSectionList()
-  | GlobalAttributesSection()
+  LOOKAHEAD( GlobalAttributesSection() <LBRACKET> ) GlobalAttributesSection() GlobalAttributesSectionList()
+  | LOOKAHEAD(GlobalAttributesSection()) GlobalAttributesSection()
 }
 
 void GlobalAttributesSection() :
 {}
 {
-  <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <COMMA> <RBRACKET>
-  | <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <RBRACKET>
+  LOOKAHEAD( <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <COMMA> )
+             <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <COMMA> <RBRACKET>
+  | LOOKAHEAD(<LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <RBRACKET>)
+              <LBRACKET> GlobalAttributeTargetSpecifier() AttributeList() <RBRACKET>
 }
 
 void GlobalAttributeTargetSpecifier() :
@@ -610,7 +615,8 @@ void Attribute() :
 void MoreAttributes() :
 {}
 {
-  [ <COMMA> Attribute() MoreAttributes() ]
+  <COMMA> Attribute() MoreAttributes()
+  | {}
 }
 
 void AttributeName() :
@@ -628,15 +634,18 @@ void AttributeArgumentsOpt() :
 void AttributeArguments() :
 {}
 {
-  <LPAREN> PositionalArgumentListOpt() <COMMA> NamedArgumentList() <RPAREN>
+  LOOKAHEAD ( <LPAREN> PositionalArgumentList() <COMMA> )
+              <LPAREN> PositionalArgumentList() <COMMA> NamedArgumentList() <RPAREN>
+  | LOOKAHEAD( <LPAREN> NamedArgumentList() ) <LPAREN> NamedArgumentList() <RPAREN>
   | <LPAREN> PositionalArgumentListOpt() <RPAREN>
-  | <LPAREN> NamedArgumentList() <RPAREN>
+
 }
 
 void PositionalArgumentListOpt() :
 {}
 {
-  [ PositionalArgumentList() ]
+  PositionalArgumentList()
+  | {}
 }
 
 void PositionalArgumentList() :
@@ -660,7 +669,8 @@ void AttributeArgumentExpression() :
 void MorePositionalArguments() :
 {}
 {
-  [ <COMMA> PositionalArgument() MorePositionalArguments() ]
+  <COMMA> PositionalArgument() MorePositionalArguments()
+  | {}
 }
 
 void NamedArgumentList() :
@@ -721,11 +731,11 @@ void NamespaceBody() :
 void TypeDeclaration() :
 {}
 {
-  ClassDeclaration()
-  | StructDeclaration()
-  | InterfaceDeclaration()
-  | EnumDeclaration()
-  | DelegateDeclaration()
+  LOOKAHEAD( AttributesOpt() ClassModifierList() PartialOpt() <CLASS> ) ClassDeclaration()
+  | LOOKAHEAD( AttributesOpt() StructModifierList() PartialOpt() <STRUCT> ) StructDeclaration()
+  | LOOKAHEAD( AttributesOpt() InterfaceModifierList() PartialOpt() <INTERFACE> ) InterfaceDeclaration()
+  | LOOKAHEAD( AttributesOpt() EnumModifierList() <ENUM> ) EnumDeclaration()
+  | LOOKAHEAD( AttributesOpt() DelegateModifierList() <DELEGATE> ) DelegateDeclaration()
 }
 
 void ClassDeclaration() :
@@ -737,19 +747,22 @@ void ClassDeclaration() :
 void AttributesOpt() :
 {}
 {
-  [ Attributes() ]
+  Attributes()
+  | {}
 }
 
 void ClassModifierList() :
 {}
 {
-  [ ClassModifier() ClassModifierList() ]
+  ClassModifier() ClassModifierList()
+  | {}
 }
 
 void PartialOpt() :
 {}
 {
-  [ <PARTIAL> ]
+  <PARTIAL>
+  | {}
 }
 
 void TypeParameterListOpt() :
@@ -779,14 +792,15 @@ void Attributes() :
 void AttributeSectionList() :
 {}
 {
-  AttributeSection() AttributeSectionList()
+  LOOKAHEAD( AttributeSection() <LBRACKET> ) AttributeSection() AttributeSectionList()
   | AttributeSection()
 }
 
 void AttributeSection() :
 {}
 {
-  <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> <RBRACKET>
+  LOOKAHEAD( <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> )
+             <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> <RBRACKET>
   | <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <RBRACKET>
 }
 
@@ -855,8 +869,11 @@ void TypeParametersPrime() :
 void ClassBase() :
 {}
 {
-  <COLON> ClassType() <COMMA> InterfaceTypeList()
-  | <COLON> ClassType()
+  LOOKAHEAD( <COLON> ClassType() <COMMA> ) <COLON> ClassType() <COMMA> InterfaceTypeList()
+  // | <COLON> ClassType()
+  | <OBJECT>
+  | <DYNAMIC>
+  | <STRING>
   | <COLON> InterfaceTypeList()
 }
 
@@ -881,11 +898,11 @@ void TypeParameterConstraintsClause() :
 void TypeParameterConstraints() :
 {}
 {
-  PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA> ConstructorConstraint()
-  | PrimaryConstraint() <COMMA> SecondaryConstraints()
-  | PrimaryConstraint() <COMMA> ConstructorConstraint()
-  | PrimaryConstraint()
-  | SecondaryConstraints() <COMMA> ConstructorConstraint()
+  LOOKAHEAD(PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA>) PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA> ConstructorConstraint()
+  | LOOKAHEAD(PrimaryConstraint() <COMMA> SecondaryConstraints()) PrimaryConstraint() <COMMA> SecondaryConstraints()
+  | LOOKAHEAD(PrimaryConstraint() <COMMA> ConstructorConstraint()) PrimaryConstraint() <COMMA> ConstructorConstraint()
+  | LOOKAHEAD(PrimaryConstraint()) PrimaryConstraint()
+  | LOOKAHEAD(SecondaryConstraints() <COMMA>) SecondaryConstraints() <COMMA> ConstructorConstraint()
   | SecondaryConstraints()
   | ConstructorConstraint()
 }
@@ -902,14 +919,14 @@ void SecondaryConstraints() :
 {}
 {
   InterfaceType() SecondaryConstraintsPrime()
-  | TypeParameter() SecondaryConstraintsPrime()
+  // | TypeParameter() SecondaryConstraintsPrime()
 }
 
 void SecondaryConstraintsPrime() :
 {}
 {
   <COMMA> InterfaceType() SecondaryConstraintsPrime()
-  | <COMMA> TypeParameter() SecondaryConstraintsPrime()
+  // | <COMMA> TypeParameter() SecondaryConstraintsPrime()
   | {}
 }
 
@@ -934,17 +951,40 @@ void ClassMemberDeclarationList() :
 void ClassMemberDeclaration() :
 {}
 {
-  ConstantDeclaration()
-  | FieldDeclaration()
-  | MethodDeclaration()
-  | PropertyDeclaration()
-  | EventDeclaration()
-  | IndexerDeclaration()
-  | OperatorDeclaration()
-  | ConstructorDeclaration()
-  | DestructorDeclaration()
-  | StaticConstructorDeclaration()
+  LOOKAHEAD(MethodHeaderLookahead()) MethodDeclaration()
+  | LOOKAHEAD(AttributesOpt() ConstantModifierList() <CONST>) ConstantDeclaration()
+  | LOOKAHEAD(AttributesOpt() EventModifierList() <EVENT>) EventDeclaration()
+  | LOOKAHEAD(AttributesOpt() IndexerModifierList() IndexerDeclaratorLookahead()) IndexerDeclaration()
+  | LOOKAHEAD([AttributesOpt() OperatorModifierList()] OperatorDeclarator()) OperatorDeclaration()
+  | LOOKAHEAD(DestructorDeclarationLookahead()) DestructorDeclaration()
+  | LOOKAHEAD(AttributesOpt() ConstructorModifierList() Identifier() <LPAREN>) ConstructorDeclaration()
+  | LOOKAHEAD([AttributesOpt() StaticConstructorModifiers()] Identifier() <LPAREN> <RPAREN>) StaticConstructorDeclaration()
+
+  | LOOKAHEAD(FieldDeclaration()) FieldDeclaration()
+  | LOOKAHEAD(PropertyDeclaration()) PropertyDeclaration()
+
   | TypeDeclaration()
+}
+
+void MethodHeaderLookahead() :
+{}
+{
+    AttributesOpt() MethodModifierList() PartialOpt() ReturnType() MemberName() TypeParameterListOpt() <LPAREN>
+}
+
+void DestructorDeclarationLookahead() :
+{}
+{
+  LOOKAHEAD(10) AttributesOpt() ExternOpt() <TILDE>
+  | LOOKAHEAD(10) AttributesOpt() ExternOpt() UnsafeOpt() <TILDE>
+  | LOOKAHEAD(10) AttributesOpt() UnsafeOpt() ExternOpt() <TILDE>
+}
+
+void IndexerDeclaratorLookahead() :
+{}
+{
+  LOOKAHEAD(Type() <THIS>) Type() <THIS>
+  | Type() InterfaceType() <DOT> <THIS> <LBRACKET>
 }
 
 void ConstantDeclaration() :
@@ -956,7 +996,8 @@ void ConstantDeclaration() :
 void ConstantModifierList() :
 {}
 {
-  [ ConstantModifier() ConstantModifierList() ]
+  ConstantModifier() ConstantModifierList()
+  | {}
 }
 
 void ConstantModifier() :
@@ -1034,7 +1075,7 @@ void VariableDeclarators() :
 void VariableDeclarator() :
 {}
 {
-  Identifier() <EQUAL> VariableInitializer()
+  LOOKAHEAD(Identifier() <EQUAL>) Identifier() <EQUAL> VariableInitializer()
   | Identifier()
 }
 
@@ -1095,15 +1136,16 @@ void MethodModifierUnsafe() :
 void ReturnType() :
 {}
 {
-  Type()
-  | <VOID>
+  LOOKAHEAD(<VOID>) <VOID>
+  | Type()
 }
 
 void MemberName() :
 {}
 {
-  Identifier()
-  | InterfaceType() <DOT> Identifier()
+  // LOOKAHEAD(InterfaceType() <DOT> ) InterfaceType() <DOT> Identifier()
+  LOOKAHEAD(InterfaceType()) InterfaceType()
+  | LOOKAHEAD(Identifier()) Identifier()
 }
 
 void FormalParameterListOpt() :
@@ -1115,9 +1157,9 @@ void FormalParameterListOpt() :
 void FormalParameterList() :
 {}
 {
-  FixedParameters()
-  | FixedParameters() <COMMA> ParameterArray()
-  | ParameterArray()
+  LOOKAHEAD(AttributesOpt() <PARAMS>) ParameterArray()
+  | LOOKAHEAD(FixedParameters() <COMMA>) FixedParameters() <COMMA> ParameterArray()
+  | FixedParameters()
 }
 
 void FixedParameters() :
@@ -1149,7 +1191,8 @@ void ParameterModifier() :
 void DefaultArgumentOpt() :
 {}
 {
-  [ DefaultArgument() ]
+  DefaultArgument()
+  | {}
 }
 
 void DefaultArgument() :
@@ -1161,7 +1204,8 @@ void DefaultArgument() :
 void MoreFixedParameters() :
 {}
 {
-  [ <COMMA> FixedParameter() MoreFixedParameters() ]
+  <COMMA> FixedParameter() MoreFixedParameters()
+  | {}
 }
 
 void ParameterArray() :
@@ -1187,7 +1231,8 @@ void StatementListOpt() :
 void StatementList() :
 {}
 {
-  [ Statement() StatementList() ]
+  Statement() StatementList()
+  | {}
 }
 
 void PropertyDeclaration() :
@@ -1227,10 +1272,10 @@ void PropertyBody() :
 void AccessorDeclarations() :
 {}
 {
-  GetAccessorDeclaration() SetAccessorDeclaration()
-  | GetAccessorDeclaration()
-  | SetAccessorDeclaration() GetAccessorDeclaration()
-  | SetAccessorDeclaration()
+  LOOKAHEAD(GetAccessorDeclaration() SetAccessorDeclaration()) GetAccessorDeclaration() SetAccessorDeclaration()
+  | LOOKAHEAD(GetAccessorDeclaration()) GetAccessorDeclaration()
+  | LOOKAHEAD(SetAccessorDeclaration() GetAccessorDeclaration()) SetAccessorDeclaration() GetAccessorDeclaration()
+  | LOOKAHEAD(SetAccessorDeclaration()) SetAccessorDeclaration()
 }
 
 void GetAccessorDeclaration() :
@@ -1248,8 +1293,8 @@ void AccessorModifierOpt() :
 void AccessorModifier() :
 {}
 {
-  <PROTECTED> <INTERNAL>
-  | <INTERNAL> <PROTECTED>
+  LOOKAHEAD(<PROTECTED> <INTERNAL>) <PROTECTED> <INTERNAL>
+  | LOOKAHEAD(<INTERNAL> <PROTECTED>) <INTERNAL> <PROTECTED>
   | <PROTECTED>
   | <INTERNAL>
   | <PRIVATE>
@@ -1283,7 +1328,8 @@ void PropertyInitializer() :
 void EventDeclaration() :
 {}
 {
-  AttributesOpt() EventModifierList() <EVENT> Type() MemberName() <LBRACE> EventAccessorDeclarations() <RBRACE>
+  LOOKAHEAD(AttributesOpt() EventModifierList() <EVENT> Type() MemberName() <LBRACE>)
+            AttributesOpt() EventModifierList() <EVENT> Type() MemberName() <LBRACE> EventAccessorDeclarations() <RBRACE>
   | AttributesOpt() EventModifierList() <EVENT> Type() VariableDeclarators() <SEMICOLON>
 }
 
@@ -1319,7 +1365,7 @@ void EventModifierUnsafe() :
 void EventAccessorDeclarations() :
 {}
 {
-  AddAccessorDeclaration() RemoveAccessorDeclaration()
+  LOOKAHEAD(AddAccessorDeclaration()) AddAccessorDeclaration() RemoveAccessorDeclaration()
   | RemoveAccessorDeclaration() AddAccessorDeclaration()
 }
 
@@ -1372,7 +1418,7 @@ void IndexerModifierUnsafe() :
 void IndexerDeclarator() :
 {}
 {
-  Type() <THIS> <LBRACKET> FormalParameterList() <RBRACKET>
+  LOOKAHEAD(Type() <THIS> ) Type() <THIS> <LBRACKET> FormalParameterList() <RBRACKET>
   | Type() InterfaceType() <DOT> <THIS> <LBRACKET> FormalParameterList() <RBRACKET>
 }
 
@@ -1392,7 +1438,7 @@ void OperatorDeclaration() :
 void OperatorModifierList() :
 {}
 {
-  OperatorModifier() OperatorModifierList()
+  LOOKAHEAD(OperatorModifier() OperatorModifierList()) OperatorModifier() OperatorModifierList()
   | OperatorModifier()
 }
 
@@ -1414,8 +1460,8 @@ void OperatorModifierUnsafe() :
 void OperatorDeclarator() :
 {}
 {
-  BinaryOperatorDeclarator()
-  | UnaryOperatorDeclarator()
+  LOOKAHEAD(BinaryOperatorDeclarator()) BinaryOperatorDeclarator()
+  | LOOKAHEAD(UnaryOperatorDeclarator()) UnaryOperatorDeclarator()
   | ConversionOperatorDeclarator()
 }
 
@@ -1524,7 +1570,7 @@ void ConstructorInitializerOpt() :
 void ConstructorInitializer() :
 {}
 {
-  <COLON> <BASE> <LPAREN> ArgumentListOpt() <RPAREN>
+  LOOKAHEAD(<COLON> <BASE>) <COLON> <BASE> <LPAREN> ArgumentListOpt() <RPAREN>
   | <COLON> <THIS> <LPAREN> ArgumentListOpt() <RPAREN>
 }
 
@@ -1555,7 +1601,8 @@ void MoreArguments() :
 void ArgumentNameOpt() :
 {}
 {
-  [ ArgumentName() ]
+  ArgumentName()
+  | {}
 }
 
 void ArgumentName() :
@@ -1588,7 +1635,8 @@ void ConstructorBody() :
 void DestructorDeclaration() :
 {}
 {
-  AttributesOpt() ExternOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
+  LOOKAHEAD(AttributesOpt() ExternOpt() <TILDE>)
+            AttributesOpt() ExternOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
   | DestructorDeclarationUnsafe()
 }
 
@@ -1608,7 +1656,8 @@ void DestructorBody() :
 void DestructorDeclarationUnsafe() :
 {}
 {
-  AttributesOpt() ExternOpt() UnsafeOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
+  LOOKAHEAD(AttributesOpt() ExternOpt() UnsafeOpt())
+            AttributesOpt() ExternOpt() UnsafeOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
   | AttributesOpt() UnsafeOpt() ExternOpt() <TILDE> Identifier() <LPAREN> <RPAREN> DestructorBody()
 }
 
@@ -1627,19 +1676,20 @@ void StaticConstructorDeclaration() :
 void StaticConstructorModifiers() :
 {}
 {
-  ExternOpt() <STATIC>
+
+  LOOKAHEAD(StaticConstructorModifiersUnsafe()) StaticConstructorModifiersUnsafe()
+  | LOOKAHEAD(ExternOpt() <STATIC>) ExternOpt() <STATIC>
   | <STATIC> ExternOpt()
-  | StaticConstructorModifiersUnsafe()
 }
 
 void StaticConstructorModifiersUnsafe() :
 {}
 {
-  ExternOpt() UnsafeOpt() <STATIC>
-  | UnsafeOpt() ExternOpt() <STATIC>
-  | ExternOpt() <STATIC> UnsafeOpt()
-  | UnsafeOpt() <STATIC> ExternOpt()
-  | <STATIC> ExternOpt() UnsafeOpt()
+  LOOKAHEAD(ExternOpt() UnsafeOpt() <STATIC>) ExternOpt() UnsafeOpt() <STATIC>
+  | LOOKAHEAD(UnsafeOpt() ExternOpt() <STATIC>) UnsafeOpt() ExternOpt() <STATIC>
+  | LOOKAHEAD(ExternOpt() <STATIC> UnsafeOpt()) ExternOpt() <STATIC> UnsafeOpt()
+  | LOOKAHEAD(UnsafeOpt() <STATIC> ExternOpt()) UnsafeOpt() <STATIC> ExternOpt()
+  | LOOKAHEAD(<STATIC> ExternOpt() UnsafeOpt()) <STATIC> ExternOpt() UnsafeOpt()
   | <STATIC> UnsafeOpt() ExternOpt()
 }
 
@@ -1700,16 +1750,16 @@ void StructBody() :
 void StructMemberDeclarationList() :
 {}
 {
-  ConstantDeclaration()
-  | FieldDeclaration()
-  | MethodDeclaration()
-  | PropertyDeclaration()
-  | EventDeclaration()
-  | IndexerDeclaration()
-  | OperatorDeclaration()
-  | ConstructorDeclaration()
-  | StaticConstructorDeclaration()
-  | TypeDeclaration()
+  LOOKAHEAD(ConstantDeclaration()) ConstantDeclaration()
+  | LOOKAHEAD(FieldDeclaration()) FieldDeclaration()
+  | LOOKAHEAD(MethodDeclaration()) MethodDeclaration()
+  | LOOKAHEAD(PropertyDeclaration()) PropertyDeclaration()
+  | LOOKAHEAD(EventDeclaration()) EventDeclaration()
+  | LOOKAHEAD(IndexerDeclaration()) IndexerDeclaration()
+  | LOOKAHEAD(OperatorDeclaration()) OperatorDeclaration()
+  | LOOKAHEAD(ConstructorDeclaration()) ConstructorDeclaration()
+  | LOOKAHEAD(StaticConstructorDeclaration()) StaticConstructorDeclaration()
+  | LOOKAHEAD(TypeDeclaration()) TypeDeclaration()
   | StructMemberDeclarationUnsafe()
 }
 
@@ -1751,7 +1801,8 @@ void BufferElementType() :
 void FixedSizeBufferDeclaratorList() :
 {}
 {
-  FixedSizeBufferDeclarator() FixedSizeBufferDeclaratorList()
+  LOOKAHEAD(FixedSizeBufferDeclarator() FixedSizeBufferDeclaratorList())
+            FixedSizeBufferDeclarator() FixedSizeBufferDeclaratorList()
   | FixedSizeBufferDeclarator()
 }
 
@@ -1854,9 +1905,9 @@ void InterfaceMemberDeclarationList() :
 void InterfaceMemberDeclaration() :
 {}
 {
-  InterfaceMethodDeclaration()
-  | InterfacePropertyDeclaration()
-  | InterfaceEventDeclaration()
+  LOOKAHEAD(InterfaceMethodDeclaration()) InterfaceMethodDeclaration()
+  | LOOKAHEAD(InterfacePropertyDeclaration()) InterfacePropertyDeclaration()
+  | LOOKAHEAD(InterfaceEventDeclaration()) InterfaceEventDeclaration()
   | InterfaceIndexerDeclaration()
 }
 
@@ -1881,9 +1932,11 @@ void InterfacePropertyDeclaration() :
 void InterfaceAccessors() :
 {}
 {
-  AttributesOpt() <GET> <SEMICOLON> AttributesOpt() <SET> <SEMICOLON>
-  | AttributesOpt() <SET> <SEMICOLON> AttributesOpt() <GET> <SEMICOLON>
-  | AttributesOpt() <GET> <SEMICOLON>
+  LOOKAHEAD(AttributesOpt() <GET> <SEMICOLON> AttributesOpt() <SET>)
+            AttributesOpt() <GET> <SEMICOLON> AttributesOpt() <SET> <SEMICOLON>
+  | LOOKAHEAD(AttributesOpt() <SET> <SEMICOLON> AttributesOpt() <GET>)
+              AttributesOpt() <SET> <SEMICOLON> AttributesOpt() <GET> <SEMICOLON>
+  | LOOKAHEAD(AttributesOpt() <GET>) AttributesOpt() <GET> <SEMICOLON>
   | AttributesOpt() <SET> <SEMICOLON>
 }
 
@@ -1936,9 +1989,10 @@ void EnumBase() :
 void EnumBody() :
 {}
 {
-  <LBRACE> <RBRACE>
-  | <LBRACE> EnumMemberDeclarations() <COMMA> <RBRACE>
-  | <LBRACE> EnumMemberDeclarations() <RBRACE>
+
+  LOOKAHEAD(<LBRACE> EnumMemberDeclarations() <COMMA>) <LBRACE> EnumMemberDeclarations() <COMMA> <RBRACE>
+  | LOOKAHEAD(<LBRACE> EnumMemberDeclarations()) <LBRACE> EnumMemberDeclarations() <RBRACE>
+  | <LBRACE> <RBRACE>
 }
 
 void EnumMemberDeclarations() :
@@ -1950,13 +2004,14 @@ void EnumMemberDeclarations() :
 void MoreEnumMemberDeclarations() :
 {}
 {
-  [ <COMMA> EnumMemberDeclaration() MoreEnumMemberDeclarations() ]
+  <COMMA> EnumMemberDeclaration() MoreEnumMemberDeclarations()
+  | {}
 }
 
 void EnumMemberDeclaration() :
 {}
 {
-  AttributesOpt() Identifier() <EQUAL> ConstantExpression()
+  LOOKAHEAD(AttributesOpt() Identifier() <EQUAL>) AttributesOpt() Identifier() <EQUAL> ConstantExpression()
   | AttributesOpt() Identifier()
 }
 
@@ -1992,30 +2047,31 @@ void DelegateModifierUnsafe() :
 void Expression() :
 {}
 {
-  NonAssignmentExpression()
-  | Assignment()
+  LOOKAHEAD(UnaryExpression() AssignmentOperator()) Assignment()
+  | LOOKAHEAD(NonAssignmentExpression()) NonAssignmentExpression()
+
 }
 
 void NonAssignmentExpression() :
 {}
 {
-  ConditionalExpression()
+  LOOKAHEAD(QueryExpression()) QueryExpression()
+  | LOOKAHEAD(ConditionalExpression()) ConditionalExpression()
   | LambdaExpression()
-  | QueryExpression()
 }
 
 void ConditionalExpression() :
 {}
 {
-  NullCoalescingExpression()
-  | NullCoalescingExpression() <QUESTION> Expression() <COLON> Expression()
+  LOOKAHEAD(NullCoalescingExpression() <QUESTION>) NullCoalescingExpression() <QUESTION> Expression() <COLON> Expression()
+  | NullCoalescingExpression()
 }
 
 void NullCoalescingExpression() :
 {}
 {
-  ConditionalOrExpression()
-  | ConditionalOrExpression() <DBL_QUESTION> NullCoalescingExpression()
+  LOOKAHEAD(ConditionalOrExpression() <DBL_QUESTION>) ConditionalOrExpression() <DBL_QUESTION> NullCoalescingExpression()
+  | ConditionalOrExpression()
 }
 
 void ConditionalOrExpression() :
@@ -2156,15 +2212,15 @@ void MultiplicativeExpressionPrime() :
 void UnaryExpression() :
 {}
 {
-  PrimaryExpression()
-  | NullConditionalExpression()
+  LOOKAHEAD(CastExpression()) CastExpression()
+  | LOOKAHEAD(PrimaryExpression()) PrimaryExpression()
+  | LOOKAHEAD(NullConditionalExpression()) NullConditionalExpression()
   | <PLUS> UnaryExpression()
   | <MINUS> UnaryExpression()
   | <EXCLAMATION> UnaryExpression()
   | <TILDE> UnaryExpression()
   | PreIncrementExpression()
   | PreDecrementExpression()
-  | CastExpression()
   | AwaitExpression()
   | UnaryExpressionUnsafe()
 }
@@ -2172,9 +2228,8 @@ void UnaryExpression() :
 void PrimaryExpression() :
 {}
 {
-  // PrimaryNoArrayCreationExpressionPrime() <LBRACKET> Expression() <RBRACKET> PrimaryExpressionPrime()
-  PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
-  | PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
+  LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
+  | LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
   | SizeofExpression() PrimaryExpressionPrime()
   | PredefinedType() <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
   | QualifiedAliasMember() <DOT> Identifier() PrimaryExpressionPrime()
@@ -2199,8 +2254,8 @@ void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementA
   | ParanthesizedExpression()
   | ThisAccess()
   | BaseAccess()
-  | ObjectCreationExpression()
-  | DelegateCreationExpression()
+  | LOOKAHEAD(ObjectCreationExpression()) ObjectCreationExpression()
+  | LOOKAHEAD(DelegateCreationExpression()) DelegateCreationExpression()
   | AnonymousObjectCreationExpression()
   | TypeofExpression()
   | CheckedExpression()
@@ -2214,25 +2269,25 @@ void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementA
 void PrimaryNoArrayCreationExpression() :
 {}
 {
-  Literal() PrimaryNoArrayCreationExpressionPrime2()
-  | SimpleName() PrimaryNoArrayCreationExpressionPrime2()
-  | ParanthesizedExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | MemberAccess() PrimaryNoArrayCreationExpressionPrime2()
-  | InvocationExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | ThisAccess() PrimaryNoArrayCreationExpressionPrime2()
-  | BaseAccess() PrimaryNoArrayCreationExpressionPrime2()
-  | PostIncrementExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | PostDecrementExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | ObjectCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | DelegateCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | AnonymousObjectCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | TypeofExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | CheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | UncheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | DefaultValueExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | NameofExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | AnonymousMethodExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | PointerMemberAccess() PrimaryNoArrayCreationExpressionPrime2()
+  LOOKAHEAD(Literal()) Literal() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(SimpleName()) SimpleName() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(ParanthesizedExpression()) ParanthesizedExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(MemberAccess()) MemberAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(InvocationExpression()) InvocationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(ThisAccess()) ThisAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(BaseAccess()) BaseAccess() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(PostIncrementExpression()) PostIncrementExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(PostDecrementExpression()) PostDecrementExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(ObjectCreationExpression()) ObjectCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(DelegateCreationExpression()) DelegateCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(AnonymousObjectCreationExpression()) AnonymousObjectCreationExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(TypeofExpression()) TypeofExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(CheckedExpression()) CheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(UncheckedExpression()) UncheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(DefaultValueExpression()) DefaultValueExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(NameofExpression()) NameofExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(AnonymousMethodExpression()) AnonymousMethodExpression() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(PointerMemberAccess()) PointerMemberAccess() PrimaryNoArrayCreationExpressionPrime2()
   | SizeofExpression() PrimaryNoArrayCreationExpressionPrime2()
 }
 
@@ -2277,8 +2332,8 @@ void ParanthesizedExpression() :
 void MemberAccess() :
 {}
 {
-  PrimaryExpression() <DOT> Identifier() TypeArgumentListOpt()
-  | PredefinedType() <DOT> Identifier() TypeArgumentListOpt()
+  LOOKAHEAD(PrimaryExpression()) PrimaryExpression() <DOT> Identifier() TypeArgumentListOpt()
+  | LOOKAHEAD(PredefinedType()) PredefinedType() <DOT> Identifier() TypeArgumentListOpt()
   | QualifiedAliasMember() <DOT> Identifier()
 }
 
@@ -2315,7 +2370,7 @@ void ThisAccess() :
 void BaseAccess() :
 {}
 {
-  <BASE> <DOT> Identifier()
+  LOOKAHEAD(<BASE> <DOT>) <BASE> <DOT> Identifier()
   | <BASE> <LBRACKET> ExpressionList() <RBRACKET>
 }
 
@@ -2334,7 +2389,7 @@ void PostDecrementExpression() :
 void ObjectCreationExpression() :
 {}
 {
-  <NEW> Type() <LPAREN> ArgumentListOpt() <RPAREN> ObjectOrCollectionInitializerOpt()
+  LOOKAHEAD(<NEW> Type() <LPAREN>) <NEW> Type() <LPAREN> ArgumentListOpt() <RPAREN> ObjectOrCollectionInitializerOpt()
   | <NEW> Type() ObjectOrCollectionInitializerOpt()
 }
 
@@ -2347,21 +2402,22 @@ void ObjectOrCollectionInitializerOpt() :
 void ObjectOrCollectionInitializer() :
 {}
 {
-  ObjectInitializer()
-  | CollectionInitializer()
+  LOOKAHEAD(CollectionInitializer()) CollectionInitializer()
+  | LOOKAHEAD(ObjectInitializer()) ObjectInitializer()
 }
 
 void ObjectInitializer() :
 {}
 {
-  <LBRACE> MemberInitializerList() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> MemberInitializerList() <COMMA>) <LBRACE> MemberInitializerList() <COMMA> <RBRACE>
   | <LBRACE> MemberInitializerListOpt() <RBRACE>
 }
 
 void MemberInitializerListOpt() :
 {}
 {
-  [ MemberInitializerList() ]
+  MemberInitializerList()
+  | {}
 }
 
 void MemberInitializerList() :
@@ -2373,7 +2429,8 @@ void MemberInitializerList() :
 void MoreMemberInitializers() :
 {}
 {
-  [ <COMMA> MemberInitializer() MoreMemberInitializers() ]
+  <COMMA> MemberInitializer() MoreMemberInitializers()
+  | {}
 }
 
 void MemberInitializer() :
@@ -2386,7 +2443,7 @@ void InitializerTarget() :
 {}
 {
   Identifier()
-  <LBRACKET> ArgumentList() <RBRACKET>
+  | <LBRACKET> ArgumentList() <RBRACKET>
 }
 
 void InitializerValue() :
@@ -2399,7 +2456,7 @@ void InitializerValue() :
 void CollectionInitializer() :
 {}
 {
-  <LBRACE> ElementInitializerList() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> ElementInitializerList() <COMMA>) <LBRACE> ElementInitializerList() <COMMA> <RBRACE>
   | <LBRACE> ElementInitializerList() <RBRACE>
 }
 
@@ -2412,7 +2469,8 @@ void ElementInitializerList() :
 void MoreElementInitializers() :
 {}
 {
-  [ <COMMA> ElementInitializer() MoreElementInitializers() ]
+  <COMMA> ElementInitializer() MoreElementInitializers()
+  | {}
 }
 
 void ElementInitializer() :
@@ -2437,7 +2495,7 @@ void AnonymousObjectCreationExpression() :
 void AnonymousObjectInitializer() :
 {}
 {
-  <LBRACE> MemberDeclarattorListOpt() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> MemberDeclarattorListOpt() <COMMA>) <LBRACE> MemberDeclarattorListOpt() <COMMA> <RBRACE>
   | <LBRACE> MemberDeclarattorListOpt() <RBRACE>
 }
 
@@ -2456,43 +2514,46 @@ void MemberDeclaratorList() :
 void MoreMemberDeclarators() :
 {}
 {
-  [ <COMMA> MemberDeclarator() MoreMemberDeclarators() ]
+  <COMMA> MemberDeclarator() MoreMemberDeclarators()
+  | {}
 }
 
 void MemberDeclarator() :
 {}
 {
-  Identifier() <EQUAL> Expression()
-  | SimpleName()
-  | MemberAccess()
-  | BaseAccess()
+  LOOKAHEAD(Identifier() <EQUAL>) Identifier() <EQUAL> Expression()
+  | LOOKAHEAD(SimpleName()) SimpleName()
+  | LOOKAHEAD(MemberAccess()) MemberAccess()
+  | LOOKAHEAD(BaseAccess()) BaseAccess()
   | NullConditionalMemberAccess()
 }
 
 void NullConditionalMemberAccess() :
 {}
 {
-  PrimaryExpression() NullConditionalOperationsOpt() <QUESTION> <DOT> Identifier() TypeArgumentListOpt()
+  LOOKAHEAD(PrimaryExpression() NullConditionalOperationsOpt() <QUESTION>)
+            PrimaryExpression() NullConditionalOperationsOpt() <QUESTION> <DOT> Identifier() TypeArgumentListOpt()
   | PrimaryExpression() NullConditionalOperationsOpt() <DOT> Identifier() TypeArgumentListOpt()
 }
 
 void NullConditionalOperationsOpt() :
 {}
 {
-  [ NullConditionalOperations() ]
+  NullConditionalOperations()
+  | {}
 }
 
 void NullConditionalOperations() :
 {}
 {
-  <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
+  LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
 }
 
 void NullConditionalOperationsPrime() :
 {}
 {
-  <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
+  LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
   | <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
@@ -2503,16 +2564,17 @@ void NullConditionalOperationsPrime() :
 void TypeofExpression() :
 {}
 {
-  <TYPEOF> <LPAREN> Type() <RPAREN>
+  LOOKAHEAD(<TYPEOF> <LPAREN> <VOID> <RPAREN>) <TYPEOF> <LPAREN> <VOID> <RPAREN>
+  | LOOKAHEAD(<TYPEOF> <LPAREN> Type()) <TYPEOF> <LPAREN> Type() <RPAREN>
   | <TYPEOF> <LPAREN> UnboundTypeName() <RPAREN>
-  | <TYPEOF> <LPAREN> <VOID> <RPAREN>
+
 }
 
 void UnboundTypeName() :
 {}
 {
-  Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
-  | Identifier() <DBL_COLON> Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
+  LOOKAHEAD(Identifier() <DBL_COLON>) Identifier() <DBL_COLON> Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
+  | Identifier() GenericDimensionSpecifierOpt() UnboundTypeNamePrime()
 }
 
 void UnboundTypeNamePrime() :
@@ -2566,8 +2628,8 @@ void NameofExpression() :
 void NamedEntity() :
 {}
 {
-  NamedEntityTargetPrime() <DOT> Identifier() TypeArgumentListOpt() NamedEntityPrime()
-  | SimpleName() NamedEntityPrime()
+  LOOKAHEAD(SimpleName() NamedEntityPrime()) SimpleName() NamedEntityPrime()
+  | NamedEntityTargetPrime() <DOT> Identifier() TypeArgumentListOpt() NamedEntityPrime()
 }
 
 void NamedEntityPrime() :
@@ -2588,11 +2650,11 @@ void NamedEntityTargetPrime() : // Without NamedEntity
 void NamedEntityTarget() :
 {}
 {
-  <THIS>
+  LOOKAHEAD(NamedEntity()) NamedEntity()
+  | LOOKAHEAD(PredefinedType()) PredefinedType()
+  | LOOKAHEAD(QualifiedAliasMember()) QualifiedAliasMember()
+  | <THIS>
   | <BASE>
-  | NamedEntity()
-  | PredefinedType()
-  | QualifiedAliasMember()
 }
 
 void PredefinedType() :
@@ -2673,8 +2735,8 @@ void AnonymousFunctionParameterModifier() :
 void PrimaryNoArrayCreationExpressionUnsafe() :
 {}
 {
-  PointerMemberAccess()
-  | PointerElementAccess()
+  LOOKAHEAD(PointerMemberAccess()) PointerMemberAccess()
+  | LOOKAHEAD(PointerElementAccess()) PointerElementAccess()
   | SizeofExpression()
 }
 
@@ -2699,15 +2761,16 @@ void SizeofExpression() :
 void ArrayCreationExpression() :
 {}
 {
-  <NEW> ArrayType() ArrayInitializer()
-  | <NEW> NonArrayType() <LBRACKET> ExpressionList() <RBRACKET> RankSpecifierListOpt() ArrayInitializerOpt()
+  LOOKAHEAD(<NEW> NonArrayType() <LBRACKET> ExpressionList() <RBRACKET>) <NEW> NonArrayType() <LBRACKET> ExpressionList() <RBRACKET> RankSpecifierListOpt() ArrayInitializerOpt()
+  | LOOKAHEAD(<NEW> ArrayType() ArrayInitializer()) <NEW> ArrayType() ArrayInitializer()
   | <NEW> RankSpecifier() ArrayInitializer()
 }
 
 void RankSpecifierListOpt() :
 {}
 {
-  [ RankSpecifierList() ]
+  RankSpecifierList()
+  | {}
 }
 
 void ArrayInitializerOpt() :
@@ -2719,7 +2782,7 @@ void ArrayInitializerOpt() :
 void ArrayInitializer() :
 {}
 {
-  <LBRACE> VariableInitializerList() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> VariableInitializerList() <COMMA>) <LBRACE> VariableInitializerList() <COMMA> <RBRACE>
   | <LBRACE> VariableInitializerListOpt() <RBRACE>
 }
 
@@ -2738,7 +2801,8 @@ void VariableInitializerList() :
 void MoreVariableInitializers() :
 {}
 {
-  [ <COMMA> VariableInitializer() MoreVariableInitializers() ]
+  <COMMA> VariableInitializer() MoreVariableInitializers()
+  | {}
 }
 
 void NullConditionalExpression() :
@@ -2799,7 +2863,7 @@ void LambdaExpression() :
 void AnonymousFunctionSignature() :
 {}
 {
-  ExplicitAnonymousFunctionSignature()
+  LOOKAHEAD(ExplicitAnonymousFunctionSignature()) ExplicitAnonymousFunctionSignature()
   | ImplicitAnonymousFunctionSignature()
 }
 
@@ -2856,7 +2920,8 @@ void FromClause() :
 void TypeOpt() :
 {}
 {
-  [ Type() ]
+  Type()
+  | {}
 }
 
 void QueryBody() :
@@ -2874,13 +2939,14 @@ void QueryBodyClausesOpt() :
 void QueryContinuationOpt() :
 {}
 {
-  [ QueryContinuation() ]
+  QueryContinuation()
+  | {}
 }
 
 void QueryBodyClauses() :
 {}
 {
-  QueryBodyClause() QueryBodyClauses()
+  LOOKAHEAD(QueryBodyClause() QueryBodyClauses()) QueryBodyClause() QueryBodyClauses()
   | QueryBodyClause()
 }
 
@@ -2890,8 +2956,8 @@ void QueryBodyClause() :
   FromClause()
   | LetClause()
   | WhereClause()
-  | JoinClause()
-  | JoinIntoClause()
+  | LOOKAHEAD(JoinClause()) JoinClause()
+  | LOOKAHEAD(JoinIntoClause()) JoinIntoClause()
   | OrderbyClause()
 }
 
@@ -3012,8 +3078,8 @@ void AssignmentOperator() :
 void Statement() :
 {}
 {
-  EmbeddedStatement()
-  | DeclarationStatement()
+  LOOKAHEAD(EmbeddedStatement()) EmbeddedStatement()
+  | LOOKAHEAD(DeclarationStatement()) DeclarationStatement()
   | LabeledStatement()
 }
 
@@ -3058,7 +3124,7 @@ void LocalVariableDeclaratorsPrime() :
 void LocalVariableDeclarator() :
 {}
 {
-  Identifier() <EQUAL> LocalVariableInitializer()
+  LOOKAHEAD(Identifier() <EQUAL>) Identifier() <EQUAL> LocalVariableInitializer()
   | Identifier()
 }
 
@@ -3093,12 +3159,12 @@ void EmbeddedStatement() :
 {
   Block()
   | EmptyStatement()
-  | ExpressionStatement()
+  | LOOKAHEAD(ExpressionStatement()) ExpressionStatement()
   | SelectionStatement()
   | IterationStatement()
   | JumpStatement()
   | TryStatement()
-  | CheckedStatement()
+  | LOOKAHEAD(CheckedStatement()) CheckedStatement()
   | UncheckedStatement()
   | LockStatement()
   | UsingStatement()
@@ -3127,12 +3193,12 @@ void ExpressionStatement() :
 void StatementExpression() :
 {}
 {
-  InvocationExpression()
-  | NullConditionalInvocationExpression()
-  | ObjectCreationExpression()
-  | Assignment()
-  | PostIncrementExpression()
-  | PostDecrementExpression()
+  LOOKAHEAD(InvocationExpression()) InvocationExpression()
+  | LOOKAHEAD(NullConditionalInvocationExpression()) NullConditionalInvocationExpression()
+  | LOOKAHEAD(ObjectCreationExpression()) ObjectCreationExpression()
+  | LOOKAHEAD(Assignment()) Assignment()
+  | LOOKAHEAD(PostIncrementExpression()) PostIncrementExpression()
+  | LOOKAHEAD(PostDecrementExpression()) PostDecrementExpression()
   | PreIncrementExpression()
   | PreDecrementExpression()
   | AwaitExpression()
@@ -3154,7 +3220,7 @@ void SelectionStatement() :
 void IfStatement() :
 {}
 {
-  <IF> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement() <ELSE> EmbeddedStatement()
+  LOOKAHEAD(<IF> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement() <ELSE>) <IF> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement() <ELSE> EmbeddedStatement()
   | <IF> <LPAREN> BooleanExpression() <RPAREN> EmbeddedStatement()
 }
 
@@ -3185,8 +3251,8 @@ void SwitchSection() :
 void SwitchLabelList() :
 {}
 {
-  SwitchLabel()
-  | SwitchLabel() SwitchLabelList()
+  LOOKAHEAD(SwitchLabel() SwitchLabelList()) SwitchLabel() SwitchLabelList()
+  | SwitchLabel()
 }
 
 void SwitchLabel() :
@@ -3245,7 +3311,7 @@ void ForIteratorOpt() :
 void ForInitializer() :
 {}
 {
-  LocalVariableDeclaration()
+  LOOKAHEAD(LocalVariableDeclaration()) LocalVariableDeclaration()
   | StatementExpressionList()
 }
 
@@ -3304,9 +3370,9 @@ void ContinueStatement() :
 void GotoStatement() :
 {}
 {
-  <GOTO> Identifier() <SEMICOLON>
-  | <GOTO> <CASE> ConstantExpression() <SEMICOLON>
-  | <GOTO> <_DEFAULT> <SEMICOLON>
+  LOOKAHEAD(<GOTO> <CASE>) <GOTO> <CASE> ConstantExpression() <SEMICOLON>
+  | LOOKAHEAD(<GOTO> <_DEFAULT>) <GOTO> <_DEFAULT> <SEMICOLON>
+  | <GOTO> Identifier() <SEMICOLON>
 }
 
 void ReturnStatement() :
@@ -3330,15 +3396,15 @@ void ThrowStatement() :
 void TryStatement() :
 {}
 {
-  <TRY> Block() CatchClauseList() FinallyClause()
-  | <TRY> Block() CatchClauseList()
+  LOOKAHEAD(<TRY> Block() CatchClauseList() FinallyClause()) <TRY> Block() CatchClauseList() FinallyClause()
+  | LOOKAHEAD(<TRY> Block() CatchClauseList()) <TRY> Block() CatchClauseList()
   | <TRY> Block() FinallyClause()
 }
 
 void CatchClauseList() :
 {}
 {
-  CatchClause() CatchClauseList()
+  LOOKAHEAD(CatchClause() CatchClauseList()) CatchClause() CatchClauseList()
   | CatchClause()
 }
 
@@ -3411,14 +3477,14 @@ void UsingStatement() :
 void ResourceAcquisition() :
 {}
 {
-  LocalVariableDeclaration()
+  LOOKAHEAD(LocalVariableDeclaration()) LocalVariableDeclaration()
   | Expression()
 }
 
 void YieldStatement() :
 {}
 {
-  <YIELD> <RETURN> Expression() <SEMICOLON>
+  LOOKAHEAD(<YIELD> <RETURN>) <YIELD> <RETURN> Expression() <SEMICOLON>
   | <YIELD> <BREAK> <SEMICOLON>
 }
 
@@ -3462,6 +3528,6 @@ void FixedPointerDeclarator() :
 void FixedPointerInitializer() :
 {}
 {
-  <AMPERSAND> VariableReference()
+  LOOKAHEAD(<AMPERSAND> VariableReference()) <AMPERSAND> VariableReference()
   | Expression()
 }
