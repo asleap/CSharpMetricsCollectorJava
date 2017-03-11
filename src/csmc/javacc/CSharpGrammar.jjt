@@ -27,6 +27,18 @@ package csmc.javacc.generated;
 
 /** Simple brace matcher. */
 public class CSharpParser {
+
+    /** 2-tuple. */
+    public static class Tuple2<T1, T2> {
+        public T1 first;
+        public T2 second;
+
+        public Tuple2(T1 first, T2 second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
 }
 
 PARSER_END(CSharpParser)
@@ -354,7 +366,7 @@ ASTMoreTypeArguments MoreTypeArguments() :
 { Token t; SimpleNode sn1, sn2; }
 {
   t = <COMMA> sn1 = TypeArgument() sn2 = MoreTypeArguments() {
-    jjtThis.value = t.image + (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue();
+    jjtThis.value = t.image + " " + (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue();
     return jjtThis;
   }
 
@@ -712,10 +724,13 @@ void NamespaceMemberDeclaration() :
   | TypeDeclaration()
 }
 
-void NamespaceDeclaration() :
-{}
+ASTNamespaceDeclaration NamespaceDeclaration() :
+{ SimpleNode namespaceName; }
 {
-  <NAMESPACE> QualifiedIdentifier() NamespaceBody() SemicolonOpt()
+  <NAMESPACE> namespaceName = QualifiedIdentifier() NamespaceBody() SemicolonOpt() {
+    jjtThis.value = namespaceName.jjtGetValue();
+    return jjtThis;
+  }
 }
 
 void SemicolonOpt() :
@@ -724,16 +739,21 @@ void SemicolonOpt() :
   [ <SEMICOLON> ]
 }
 
-void QualifiedIdentifier() :
-{}
+ASTQualifiedIdentifier QualifiedIdentifier() :
+{ SimpleNode sn1, sn2; }
 {
-  Identifier() MoreIdentifiers()
+  sn1 = Identifier() sn2 = MoreIdentifiers()    { jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue(); return jjtThis; }
 }
 
-void MoreIdentifiers() :
-{}
+ASTMoreIdentifiers MoreIdentifiers() :
+{ Token t; SimpleNode sn1, sn2; }
 {
-  [ <DOT> Identifier() MoreIdentifiers() ]
+  t = <DOT> sn1 = Identifier() sn2 = MoreIdentifiers() {
+    jjtThis.value = t.image + (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue();
+    return jjtThis;
+  }
+
+  | {}  { jjtThis.value = ""; return jjtThis; }
 }
 
 void NamespaceBody() :
@@ -752,10 +772,13 @@ void TypeDeclaration() :
   | DelegateDeclaration()
 }
 
-void ClassDeclaration() :
-{}
+ASTClassDeclaration ClassDeclaration() :
+{ SimpleNode className, classBase; }
 {
-  AttributesOpt() ClassModifierList() PartialOpt() <CLASS> Identifier() TypeParameterListOpt() ClassBaseOpt() TypeParameterConstraintsClauseList() ClassBody() SemicolonOpt()
+  AttributesOpt() ClassModifierList() PartialOpt() <CLASS> className = Identifier() TypeParameterListOpt() classBase = ClassBaseOpt() TypeParameterConstraintsClauseList() ClassBody() SemicolonOpt() {
+    jjtThis.value = new Tuple2(className.jjtGetValue(), classBase.jjtGetValue());
+    return jjtThis;
+  }
 }
 
 void AttributesOpt() :
@@ -782,10 +805,11 @@ void TypeParameterListOpt() :
   [ TypeParameterList() ]
 }
 
-void ClassBaseOpt() :
-{}
+ASTClassBaseOpt ClassBaseOpt() :
+{ SimpleNode sn; }
 {
-  [ ClassBase() ]
+  sn = ClassBase()  { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | {}  { return jjtThis; }
 }
 
 void TypeParameterConstraintsClauseList() :
@@ -876,12 +900,12 @@ void TypeParametersPrime() :
   [ <COMMA> AttributesOpt() TypeParameter() TypeParametersPrime() ]
 }
 
-void ClassBase() :
-{}
+ASTClassBase ClassBase() :
+{ SimpleNode sn; }
 {
-  <COLON> ClassType() <COMMA> InterfaceTypeList()
-  | <COLON> ClassType()
-  | <COLON> InterfaceTypeList()
+  <COLON> sn = ClassType() <COMMA> InterfaceTypeList()  { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | <COLON> sn = ClassType()    { jjtThis.value = sn.jjtGetValue(); return jjtThis; }
+  | <COLON> InterfaceTypeList() { return jjtThis; }
 }
 
 void InterfaceTypeList() :
