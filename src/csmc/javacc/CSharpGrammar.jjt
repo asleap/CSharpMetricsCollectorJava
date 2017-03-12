@@ -25,19 +25,12 @@ PARSER_BEGIN(CSharpParser)
 
 package csmc.javacc.generated;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import csmc.javacc.util.Tuple2;
+
 /** Simple brace matcher. */
 public class CSharpParser {
-
-    /** 2-tuple. */
-    public static class Tuple2<T1, T2> {
-        public T1 first;
-        public T2 second;
-
-        public Tuple2(T1 first, T2 second) {
-            this.first = first;
-            this.second = second;
-        }
-    }
 
 }
 
@@ -319,28 +312,36 @@ void UsingAliasDirective() :
 }
 
 ASTNamespaceOrTypeName NamespaceOrTypeName() :
-{ SimpleNode sn1, sn2, sn3; }
+{ ArrayList<String> ns = new ArrayList<String>(); SimpleNode sn1, sn2; }
 {
-  sn1 = Identifier() sn2 = TypeArgumentListOpt() sn3 = NamespaceOrTypeNamePrime() {
-    jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue() + (String) sn3.jjtGetValue();
+  sn1 = Identifier() sn2 = TypeArgumentListOpt() NamespaceOrTypeNamePrime(ns) {
+    ns.add((String) sn1.jjtGetValue() + (String) sn2.jjtGetValue());
+    Collections.reverse(ns);
+    String[] nsArray = new String[ns.size()];
+    ns.toArray(nsArray);
+    jjtThis.value = nsArray;
     return jjtThis;
   }
 
-  | sn1 = QualifiedAliasMember() sn2 = NamespaceOrTypeNamePrime() {
-    jjtThis.value = (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue();
+  | sn1 = QualifiedAliasMember() NamespaceOrTypeNamePrime(ns) {
+    ns.add((String) sn1.jjtGetValue());
+    Collections.reverse(ns);
+    String[] nsArray = new String[ns.size()];
+    ns.toArray(nsArray);
+    jjtThis.value = nsArray;
     return jjtThis;
   }
 }
 
-ASTNamespaceOrTypeNamePrime NamespaceOrTypeNamePrime() :
-{ Token t; SimpleNode sn1, sn2, sn3; }
+ASTNamespaceOrTypeNamePrime NamespaceOrTypeNamePrime(ArrayList<String> ns) :
+{ SimpleNode sn1, sn2; }
 {
-  t = <DOT> sn1 = Identifier() sn2 = TypeArgumentListOpt() sn3 = NamespaceOrTypeNamePrime() {
-    jjtThis.value = t.image + (String) sn1.jjtGetValue() + (String) sn2.jjtGetValue() + (String) sn3.jjtGetValue();
+  <DOT> sn1 = Identifier() sn2 = TypeArgumentListOpt() NamespaceOrTypeNamePrime(ns) {
+    ns.add((String) sn1.jjtGetValue() + (String) sn2.jjtGetValue());
     return jjtThis;
   }
 
-  | {}                                              { jjtThis.value = ""; return jjtThis; }
+| {}    { return jjtThis; }
 }
 
 ASTTypeArgumentListOpt TypeArgumentListOpt() :

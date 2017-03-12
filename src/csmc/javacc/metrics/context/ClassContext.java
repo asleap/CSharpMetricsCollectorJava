@@ -1,21 +1,27 @@
 package csmc.javacc.metrics.context;
 
-import csmc.javacc.metrics.CKMetric;
+import csmc.javacc.metrics.CSClass;
+import csmc.javacc.metrics.MetricsDriver;
 
 /**
  * ClassContext contains current class name, associated CK metric
  * and reference to related namespace context.
- * It uses String as key parameter, and instance of CKMetric as value.
+ * It uses String as key parameter, and instance of CSClass as value.
  */
 public class ClassContext implements ParseContext {
     private ParseContext parent;
     private String className;
-    private CKMetric ckMetric;
+    private CSClass csClass;
+    private MetricsDriver metricsDriver;
 
-    public ClassContext(ParseContext parent, String className) {
+    public ClassContext(ParseContext parent, String className, MetricsDriver metricsDriver) {
         this.parent = parent;
         this.className = className;
-        this.ckMetric = new CKMetric(this.toString());
+        this.metricsDriver = metricsDriver;
+        this.csClass = this.metricsDriver.getCsClass(this.toString());
+        if (this.csClass == null) {
+            this.csClass = metricsDriver.newCsClass(this.toString());
+        }
     }
 
     @Override
@@ -29,8 +35,8 @@ public class ClassContext implements ParseContext {
     }
 
     @Override
-    public CKMetric getValue() {
-        return ckMetric;
+    public CSClass getValue() {
+        return csClass;
     }
 
     @Override

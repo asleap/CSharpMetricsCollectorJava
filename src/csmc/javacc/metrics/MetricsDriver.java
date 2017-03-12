@@ -7,17 +7,25 @@ import java.util.Map;
  * MetricsDriver class calculates metrics for a given C# project
  */
 public class MetricsDriver {
-    private Map<String, CKMetric> ckMetrics;
+    private Map<String, CSClass> csClasses;
 
     public MetricsDriver() {
-        this.ckMetrics = new HashMap<>();
+        this.csClasses = new HashMap<>();
     }
 
-    public void putCkMetric(CKMetric metric) {
-        this.ckMetrics.put(metric.getClassName(), metric);
+    public void putCsClass(CSClass csClass) {
+        if (csClasses.containsKey(csClass.getName()))
+            throw new IllegalArgumentException("Class " + csClass.getName() + " already exists");
+        csClasses.put(csClass.getName(), csClass);
     }
 
-    public CKMetric getCkMetric(String className) {
-        return this.ckMetrics.get(className);
+    public CSClass getCsClass(String className) {
+        return csClasses.get(className);
+    }
+
+    public CSClass newCsClass(String className) {
+        CSClass csClass = new CSClass(className);
+        putCsClass(csClass);
+        return csClass;
     }
 }

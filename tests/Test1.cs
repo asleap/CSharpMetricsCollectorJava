@@ -1,7 +1,7 @@
 using System.Collections;
 
 namespace Math {
-    public abstract class MathHelper : AbstractMath
+    public abstract class MathHelper : AbstractMath.MathClass
     {
         public static float lerp(float a, float b, float t)
         {

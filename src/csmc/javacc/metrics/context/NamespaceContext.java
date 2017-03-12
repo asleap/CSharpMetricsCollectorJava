@@ -5,15 +5,17 @@ package csmc.javacc.metrics.context;
  * It uses String as key parameter, and null reference as value.
  */
 public class NamespaceContext implements ParseContext {
+    private ParseContext parent;
     private String namespaceName;
 
-    public NamespaceContext(String namespaceName) {
+    public NamespaceContext(ParseContext parent, String namespaceName) {
+        this.parent = parent;
         this.namespaceName = namespaceName;
     }
 
     @Override
     public ParseContext getParent() {
-        return null;
+        return parent;
     }
 
     @Override
@@ -28,6 +30,6 @@ public class NamespaceContext implements ParseContext {
 
     @Override
     public String toString() {
-        return namespaceName;
+       return parent == null || parent.toString().isEmpty() ? namespaceName : parent.toString() + "." + namespaceName;
     }
 }
