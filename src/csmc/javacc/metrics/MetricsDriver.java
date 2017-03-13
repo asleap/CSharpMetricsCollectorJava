@@ -1,5 +1,7 @@
 package csmc.javacc.metrics;
 
+import csmc.javacc.lang.CSClass;
+
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,6 +1,6 @@
 package csmc.javacc.metrics.context;
 
-import csmc.javacc.metrics.CSClass;
+import csmc.javacc.lang.CSClass;
 import csmc.javacc.metrics.MetricsDriver;
 
 /**

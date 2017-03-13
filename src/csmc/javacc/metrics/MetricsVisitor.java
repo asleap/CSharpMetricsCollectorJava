@@ -1,6 +1,7 @@
 package csmc.javacc.metrics;
 
 import csmc.javacc.SimpleVisitor;
+import csmc.javacc.lang.CSClass;
 import csmc.javacc.generated.ASTClassDeclaration;
 import csmc.javacc.generated.ASTNamespaceDeclaration;
 import csmc.javacc.metrics.context.ClassContext;
@@ -71,7 +72,7 @@ public class MetricsVisitor extends SimpleVisitor {
                 baseClass = metricsDriver.newCsClass(baseClassNameString);
             }
 
-            baseClass.insertChild(classContext.getValue());
+            baseClass.addChild(classContext.getValue());
         }
 
         super.visit(node, classContext);
