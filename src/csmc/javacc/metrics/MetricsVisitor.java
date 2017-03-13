@@ -1,5 +1,5 @@
 package csmc.javacc.metrics;
-
+/*
 import csmc.javacc.SimpleVisitor;
 import csmc.javacc.lang.CSClass;
 import csmc.javacc.generated.ASTClassDeclaration;
@@ -9,9 +9,6 @@ import csmc.javacc.metrics.context.NamespaceContext;
 import csmc.javacc.metrics.context.ParseContext;
 import csmc.javacc.util.Tuple2;
 
-/**
- * A visitor that calculates metrics
- */
 public class MetricsVisitor extends SimpleVisitor {
     private MetricsDriver metricsDriver;
 
@@ -79,3 +76,4 @@ public class MetricsVisitor extends SimpleVisitor {
         return data;
     }
 }
+*/
