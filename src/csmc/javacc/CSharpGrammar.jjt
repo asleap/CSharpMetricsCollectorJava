@@ -1,5 +1,5 @@
 options {
-  LOOKAHEAD = 3;
+  LOOKAHEAD = 2;
   CHOICE_AMBIGUITY_CHECK = 2;
   OTHER_AMBIGUITY_CHECK = 1;
   STATIC = true;
@@ -324,7 +324,7 @@ void NamespaceOrTypeNamePrime() :
 void TypeArgumentListOpt() :
 {}
 {
-  TypeArgumentList()
+  LOOKAHEAD(TypeArgumentList() )TypeArgumentList()
   | {}
 }
 
@@ -368,7 +368,7 @@ void TypePrime() :
 {}
 {
   <QUESTION> TypePrime()
-  | RankSpecifierList() TypePrime()
+  | LOOKAHEAD(RankSpecifierList()) RankSpecifierList() TypePrime()
   | <ASTERISK> TypePrime()
   | {}
 }
@@ -634,9 +634,9 @@ void AttributeArgumentsOpt() :
 void AttributeArguments() :
 {}
 {
-  LOOKAHEAD ( <LPAREN> PositionalArgumentList() <COMMA> )
+  LOOKAHEAD ( <LPAREN> PositionalArgumentList() <COMMA> NamedArgumentList() <RPAREN>)
               <LPAREN> PositionalArgumentList() <COMMA> NamedArgumentList() <RPAREN>
-  | LOOKAHEAD( <LPAREN> NamedArgumentList() ) <LPAREN> NamedArgumentList() <RPAREN>
+  | LOOKAHEAD( <LPAREN> NamedArgumentList() <RPAREN>) <LPAREN> NamedArgumentList() <RPAREN>
   | <LPAREN> PositionalArgumentListOpt() <RPAREN>
 
 }
@@ -799,7 +799,7 @@ void AttributeSectionList() :
 void AttributeSection() :
 {}
 {
-  LOOKAHEAD( <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> )
+  LOOKAHEAD( <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> <RBRACKET>)
              <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <COMMA> <RBRACKET>
   | <LBRACKET> AttributeTargetSpecifierOpt() AttributeList() <RBRACKET>
 }
@@ -898,11 +898,11 @@ void TypeParameterConstraintsClause() :
 void TypeParameterConstraints() :
 {}
 {
-  LOOKAHEAD(PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA>) PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA> ConstructorConstraint()
+  LOOKAHEAD(PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA> ConstructorConstraint()) PrimaryConstraint() <COMMA> SecondaryConstraints() <COMMA> ConstructorConstraint()
   | LOOKAHEAD(PrimaryConstraint() <COMMA> SecondaryConstraints()) PrimaryConstraint() <COMMA> SecondaryConstraints()
   | LOOKAHEAD(PrimaryConstraint() <COMMA> ConstructorConstraint()) PrimaryConstraint() <COMMA> ConstructorConstraint()
   | LOOKAHEAD(PrimaryConstraint()) PrimaryConstraint()
-  | LOOKAHEAD(SecondaryConstraints() <COMMA>) SecondaryConstraints() <COMMA> ConstructorConstraint()
+  | LOOKAHEAD(SecondaryConstraints() <COMMA> ConstructorConstraint()) SecondaryConstraints() <COMMA> ConstructorConstraint()
   | SecondaryConstraints()
   | ConstructorConstraint()
 }
@@ -1158,7 +1158,7 @@ void FormalParameterList() :
 {}
 {
   LOOKAHEAD(AttributesOpt() <PARAMS>) ParameterArray()
-  | LOOKAHEAD(FixedParameters() <COMMA>) FixedParameters() <COMMA> ParameterArray()
+  | LOOKAHEAD(FixedParameters() <COMMA> ParameterArray()) FixedParameters() <COMMA> ParameterArray()
   | FixedParameters()
 }
 
@@ -1601,7 +1601,7 @@ void MoreArguments() :
 void ArgumentNameOpt() :
 {}
 {
-  ArgumentName()
+  LOOKAHEAD(ArgumentName()) ArgumentName()
   | {}
 }
 
@@ -1990,7 +1990,7 @@ void EnumBody() :
 {}
 {
 
-  LOOKAHEAD(<LBRACE> EnumMemberDeclarations() <COMMA>) <LBRACE> EnumMemberDeclarations() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> EnumMemberDeclarations() <COMMA> <RBRACE>) <LBRACE> EnumMemberDeclarations() <COMMA> <RBRACE>
   | LOOKAHEAD(<LBRACE> EnumMemberDeclarations()) <LBRACE> EnumMemberDeclarations() <RBRACE>
   | <LBRACE> <RBRACE>
 }
@@ -2047,9 +2047,8 @@ void DelegateModifierUnsafe() :
 void Expression() :
 {}
 {
-  LOOKAHEAD(UnaryExpression() AssignmentOperator()) Assignment()
-  | LOOKAHEAD(NonAssignmentExpression()) NonAssignmentExpression()
-
+  LOOKAHEAD(NonAssignmentExpression()) NonAssignmentExpression()
+  | LOOKAHEAD(Assignment()) Assignment()
 }
 
 void NonAssignmentExpression() :
@@ -2057,7 +2056,7 @@ void NonAssignmentExpression() :
 {
   LOOKAHEAD(QueryExpression()) QueryExpression()
   | LOOKAHEAD(ConditionalExpression()) ConditionalExpression()
-  | LambdaExpression()
+  | LOOKAHEAD(LambdaExpression()) LambdaExpression()
 }
 
 void ConditionalExpression() :
@@ -2213,8 +2212,8 @@ void UnaryExpression() :
 {}
 {
   LOOKAHEAD(CastExpression()) CastExpression()
-  | LOOKAHEAD(PrimaryExpression()) PrimaryExpression()
   | LOOKAHEAD(NullConditionalExpression()) NullConditionalExpression()
+  | LOOKAHEAD(PrimaryExpression()) PrimaryExpression()
   | <PLUS> UnaryExpression()
   | <MINUS> UnaryExpression()
   | <EXCLAMATION> UnaryExpression()
@@ -2228,12 +2227,12 @@ void UnaryExpression() :
 void PrimaryExpression() :
 {}
 {
-  LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
+  LOOKAHEAD(ArrayCreationExpression()) ArrayCreationExpression() PrimaryExpressionPrime()
+  | LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
   | LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
   | SizeofExpression() PrimaryExpressionPrime()
   | PredefinedType() <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
   | QualifiedAliasMember() <DOT> Identifier() PrimaryExpressionPrime()
-  | ArrayCreationExpression() PrimaryExpressionPrime()
 }
 
 void PrimaryExpressionPrime() :
@@ -2242,15 +2241,16 @@ void PrimaryExpressionPrime() :
   <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
   | <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
   | <MINUS_GREATER> Identifier() PrimaryExpressionPrime()
+  | {}
    // | <DBL_PLUS> PrimaryExpressionPrime()
    // | <DBL_MINUS> PrimaryExpressionPrime()
-  | {}
 }
 
 void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementAccess, PostIncrementExpression, PostDecrementExpression, InvocationExpression and Unsafe
 {}
 {
   Literal()
+  | SimpleName()
   | ParanthesizedExpression()
   | ThisAccess()
   | BaseAccess()
@@ -2263,7 +2263,6 @@ void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementA
   | DefaultValueExpression()
   | NameofExpression()
   | AnonymousMethodExpression()
-  | SimpleName()
 }
 
 void PrimaryNoArrayCreationExpression() :
@@ -2358,7 +2357,8 @@ void ExpressionList() :
 void MoreExpressions() :
 {}
 {
-  [ <COMMA> Expression() MoreExpressions() ]
+  LOOKAHEAD(<COMMA> Expression()) <COMMA> Expression() MoreExpressions()
+  | {}
 }
 
 void ThisAccess() :
@@ -2409,7 +2409,7 @@ void ObjectOrCollectionInitializer() :
 void ObjectInitializer() :
 {}
 {
-  LOOKAHEAD(<LBRACE> MemberInitializerList() <COMMA>) <LBRACE> MemberInitializerList() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> MemberInitializerList() <COMMA> <RBRACE>) <LBRACE> MemberInitializerList() <COMMA> <RBRACE>
   | <LBRACE> MemberInitializerListOpt() <RBRACE>
 }
 
@@ -2456,7 +2456,7 @@ void InitializerValue() :
 void CollectionInitializer() :
 {}
 {
-  LOOKAHEAD(<LBRACE> ElementInitializerList() <COMMA>) <LBRACE> ElementInitializerList() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> ElementInitializerList() <COMMA> <RBRACE>) <LBRACE> ElementInitializerList() <COMMA> <RBRACE>
   | <LBRACE> ElementInitializerList() <RBRACE>
 }
 
@@ -2495,7 +2495,7 @@ void AnonymousObjectCreationExpression() :
 void AnonymousObjectInitializer() :
 {}
 {
-  LOOKAHEAD(<LBRACE> MemberDeclarattorListOpt() <COMMA>) <LBRACE> MemberDeclarattorListOpt() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> MemberDeclarattorListOpt() <COMMA> <RBRACE>) <LBRACE> MemberDeclarattorListOpt() <COMMA> <RBRACE>
   | <LBRACE> MemberDeclarattorListOpt() <RBRACE>
 }
 
@@ -2554,7 +2554,7 @@ void NullConditionalOperationsPrime() :
 {}
 {
   LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
-  | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
+  | LOOKAHEAD(<QUESTION> <LBRACKET>) <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
   | <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
   | <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
   | <LPAREN> ArgumentListOpt() <RPAREN> NullConditionalOperationsPrime()
@@ -2782,7 +2782,7 @@ void ArrayInitializerOpt() :
 void ArrayInitializer() :
 {}
 {
-  LOOKAHEAD(<LBRACE> VariableInitializerList() <COMMA>) <LBRACE> VariableInitializerList() <COMMA> <RBRACE>
+  LOOKAHEAD(<LBRACE> VariableInitializerList() <COMMA> <RBRACE>) <LBRACE> VariableInitializerList() <COMMA> <RBRACE>
   | <LBRACE> VariableInitializerListOpt() <RBRACE>
 }
 
@@ -2801,7 +2801,7 @@ void VariableInitializerList() :
 void MoreVariableInitializers() :
 {}
 {
-  <COMMA> VariableInitializer() MoreVariableInitializers()
+  LOOKAHEAD(<COMMA> VariableInitializer()) <COMMA> VariableInitializer() MoreVariableInitializers()
   | {}
 }
 
@@ -3164,7 +3164,7 @@ void EmbeddedStatement() :
   | IterationStatement()
   | JumpStatement()
   | TryStatement()
-  | LOOKAHEAD(CheckedStatement()) CheckedStatement()
+  | LOOKAHEAD(<CHECKED> <LBRACE>) CheckedStatement()
   | UncheckedStatement()
   | LockStatement()
   | UsingStatement()

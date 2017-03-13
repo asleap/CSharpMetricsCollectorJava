@@ -31,7 +31,7 @@ namespace My
 
     public unsafe partial class A : C, I
     {
-        [DllImport("kernel32", SetLastError = true)]
+        // [DllImport("kernel32", SetLastError = true)]
         static extern bool CreateDirectory(string name, SecurityAttribute sa);
 
         private const int global = int.MinValue - 1;
@@ -58,7 +58,7 @@ namespace My
 //            var привет = local;
 //            var мир = local;
             var local3 = 0, local4 = 1;
-            local3 = local4 = 1;
+            // local3 = local4 = 1;
             var local5 = null as Action ?? null;
             var local6 = local5 is Action;
 
@@ -153,9 +153,9 @@ namespace My
             };
             int[, ,] cube = { { { 111, 112, }, { 121, 122 } }, { { 211, 212 }, { 221, 222 } } };
             int[][] jagged = { { 111 }, { 121, 122 } };
-            int[][,] arr = new int[5][,]; // as opposed to new int[][5,5]
+            // int[][,] arr = new int[5][,]; // as opposed to new int[][5,5]
             arr[0] = new int[5,5];  // as opposed to arr[0,0] = new int[5];
-            arr[0][0,0] = 47;
+            // arr[0][0,0] = 47;
             int[] arrayTypeInference = new[] { 0, 1, };
             switch (3) { }
             switch (i)
