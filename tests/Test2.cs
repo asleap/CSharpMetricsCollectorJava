@@ -207,31 +207,31 @@ namespace My
                 else
                     continue;
             }
-            checked
-            {
-                checked(++i);
-            }
-            unchecked
-            {
-                unchecked(++i);
-            }
-            lock (sync)
-                process();
+//            checked
+//            {
+//                checked(++i);
+//            }
+//            unchecked
+//            {
+//                unchecked(++i);
+//            }
+//            lock (sync)
+//                process();
             using (var v = BeginScope())
             using (A a = new A())
             using (A a = new A(), b = new A())
             using (BeginScope())
                 return;
-            yield return this.items[3];
-            yield break;
-            fixed (int* p = stackalloc int[100], q = &y)
-            {
-                *intref = 1;
-            }
-            fixed (int* p = stackalloc int[100])
-            {
-                *intref = 1;
-            }
+//            yield return this.items[3];
+//            yield break;
+//            fixed (int* p = stackalloc int[100], q = &y)
+//            {
+//                *intref = 1;
+//            }
+//            fixed (int* p = stackalloc int[100])
+//            {
+//                *intref = 1;
+//            }
             unsafe
             {
                 int* p = null;

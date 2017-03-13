@@ -1,5 +1,5 @@
 options {
-  LOOKAHEAD = 2;
+  LOOKAHEAD = 1;
   CHOICE_AMBIGUITY_CHECK = 2;
   OTHER_AMBIGUITY_CHECK = 1;
   STATIC = true;
@@ -16,9 +16,6 @@ options {
   BUILD_TOKEN_MANAGER = true;
   SANITY_CHECK = true;
   FORCE_LA_CHECK = false;
-
-  MULTI = true;
-  VISITOR = true;
 }
 
 PARSER_BEGIN(CSharpParser)
@@ -226,14 +223,21 @@ TOKEN :
                     |((["0"-"9"])+(["F","f","D","d","M","m"])) >
   | < CHARACTER_LITERAL: "'" ((~["'","\\","\r","\n","\0","\u2028","\u2029"])
                          |("\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v")
-                         |("\\x"(["0"-"9","a"-"f","A"-"F"]){1,4})
-                         |("\\u"(["0"-"9","a"-"f","A"-"F"]){4})
-                         |("\\U"(["0"-"9","a"-"f","A"-"F"]){8})
+                         |("\\x"(["0"-"9","a"-"f","A"-"F"]))
+                         |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                         |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                         |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                         |("\\u"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                         |("\\U"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
                          ) "'" >
   | < STRING_LITERAL: ( "\"" ((~["'","\\","\r","\n","\0","\u2028","\u2029"])
                               |("\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v")
-                              |("\\x"(["0"-"9","a"-"f","A"-"F"]){1,4})
-                              |("\\u"(["0"-"9","a"-"f","A"-"F"]){4}) | ("\\U"(["0"-"9","a"-"f","A"-"F"]){8}))*
+                              |("\\x"(["0"-"9","a"-"f","A"-"F"]))
+                              |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                              |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                              |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                              |("\\u"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
+                              |("\\U"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])))*
                         "\"")
                       | ( "@\"" (( ~["\""] )
                                  |( "\"\"" ))*
@@ -241,11 +245,10 @@ TOKEN :
 }
 
 /** Root production. */
-SimpleNode Input() :
+void Input() :
 {}
 {
   Start() <EOF>
-  { return jjtThis; }
 }
 
 /** Brace matching production. */
@@ -276,8 +279,7 @@ void UsingDirectiveList() :
 void GlobalAttributesOpt() :
 {}
 {
- GlobalAttributes()
- | {}
+ [ LOOKAHEAD(GlobalAttributes()) GlobalAttributes() ]
 }
 
 void NamespaceMemberDeclarationList() :
@@ -317,15 +319,13 @@ void NamespaceOrTypeName() :
 void NamespaceOrTypeNamePrime() :
 {}
 {
-  <DOT> Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime()
-  | {}
+  [ LOOKAHEAD(<DOT> Identifier()) <DOT> Identifier() TypeArgumentListOpt() NamespaceOrTypeNamePrime() ]
 }
 
 void TypeArgumentListOpt() :
 {}
 {
-  LOOKAHEAD(TypeArgumentList() )TypeArgumentList()
-  | {}
+  [ LOOKAHEAD(TypeArgumentList() )TypeArgumentList() ]
 }
 
 void TypeArgumentList() :
@@ -367,10 +367,11 @@ void Type() :
 void TypePrime() :
 {}
 {
-  <QUESTION> TypePrime()
-  | LOOKAHEAD(RankSpecifierList()) RankSpecifierList() TypePrime()
-  | <ASTERISK> TypePrime()
-  | {}
+
+  [ LOOKAHEAD((<QUESTION>) | (RankSpecifier()) | (<ASTERISK>))
+  (LOOKAHEAD(<QUESTION>) <QUESTION> TypePrime()
+  | LOOKAHEAD(RankSpecifier()) RankSpecifierList() TypePrime()
+  | LOOKAHEAD(<ASTERISK>) <ASTERISK> TypePrime()) ]
 }
 
 //void ValueType() :
@@ -500,8 +501,7 @@ void RankSpecifier() :
 void DimSeparatorList() :
 {}
 {
-  DimSeparator() DimSeparatorList()
-  | {}
+  [ DimSeparator() DimSeparatorList() ]
 }
 
 void DimSeparator() :
@@ -615,8 +615,7 @@ void Attribute() :
 void MoreAttributes() :
 {}
 {
-  <COMMA> Attribute() MoreAttributes()
-  | {}
+  [ LOOKAHEAD(<COMMA> Attribute()) <COMMA> Attribute() MoreAttributes() ]
 }
 
 void AttributeName() :
@@ -644,8 +643,7 @@ void AttributeArguments() :
 void PositionalArgumentListOpt() :
 {}
 {
-  PositionalArgumentList()
-  | {}
+  [ PositionalArgumentList() ]
 }
 
 void PositionalArgumentList() :
@@ -669,8 +667,7 @@ void AttributeArgumentExpression() :
 void MorePositionalArguments() :
 {}
 {
-  <COMMA> PositionalArgument() MorePositionalArguments()
-  | {}
+  [ LOOKAHEAD(<COMMA> PositionalArgument()) <COMMA> PositionalArgument() MorePositionalArguments() ]
 }
 
 void NamedArgumentList() :
@@ -747,22 +744,19 @@ void ClassDeclaration() :
 void AttributesOpt() :
 {}
 {
-  Attributes()
-  | {}
+  [ Attributes() ]
 }
 
 void ClassModifierList() :
 {}
 {
-  ClassModifier() ClassModifierList()
-  | {}
+  [ ClassModifier() ClassModifierList() ]
 }
 
 void PartialOpt() :
 {}
 {
-  <PARTIAL>
-  | {}
+  [ <PARTIAL> ]
 }
 
 void TypeParameterListOpt() :
@@ -925,9 +919,8 @@ void SecondaryConstraints() :
 void SecondaryConstraintsPrime() :
 {}
 {
-  <COMMA> InterfaceType() SecondaryConstraintsPrime()
+  [ LOOKAHEAD(<COMMA> InterfaceType()) <COMMA> InterfaceType() SecondaryConstraintsPrime() ]
   // | <COMMA> TypeParameter() SecondaryConstraintsPrime()
-  | {}
 }
 
 void ConstructorConstraint() :
@@ -996,8 +989,7 @@ void ConstantDeclaration() :
 void ConstantModifierList() :
 {}
 {
-  ConstantModifier() ConstantModifierList()
-  | {}
+  [ ConstantModifier() ConstantModifierList() ]
 }
 
 void ConstantModifier() :
@@ -1191,8 +1183,7 @@ void ParameterModifier() :
 void DefaultArgumentOpt() :
 {}
 {
-  DefaultArgument()
-  | {}
+  [ DefaultArgument() ]
 }
 
 void DefaultArgument() :
@@ -1204,8 +1195,7 @@ void DefaultArgument() :
 void MoreFixedParameters() :
 {}
 {
-  <COMMA> FixedParameter() MoreFixedParameters()
-  | {}
+  [ LOOKAHEAD(<COMMA> FixedParameter()) <COMMA> FixedParameter() MoreFixedParameters() ]
 }
 
 void ParameterArray() :
@@ -1231,8 +1221,7 @@ void StatementListOpt() :
 void StatementList() :
 {}
 {
-  Statement() StatementList()
-  | {}
+  [ LOOKAHEAD(Statement()) Statement() StatementList() ]
 }
 
 void PropertyDeclaration() :
@@ -1601,8 +1590,7 @@ void MoreArguments() :
 void ArgumentNameOpt() :
 {}
 {
-  LOOKAHEAD(ArgumentName()) ArgumentName()
-  | {}
+  [ LOOKAHEAD(ArgumentName()) ArgumentName() ]
 }
 
 void ArgumentName() :
@@ -2004,8 +1992,7 @@ void EnumMemberDeclarations() :
 void MoreEnumMemberDeclarations() :
 {}
 {
-  <COMMA> EnumMemberDeclaration() MoreEnumMemberDeclarations()
-  | {}
+  [ LOOKAHEAD(<COMMA> EnumMemberDeclaration()) <COMMA> EnumMemberDeclaration() MoreEnumMemberDeclarations() ]
 }
 
 void EnumMemberDeclaration() :
@@ -2047,8 +2034,8 @@ void DelegateModifierUnsafe() :
 void Expression() :
 {}
 {
-  LOOKAHEAD(NonAssignmentExpression()) NonAssignmentExpression()
-  | LOOKAHEAD(Assignment()) Assignment()
+  LOOKAHEAD(Assignment()) Assignment()
+  | LOOKAHEAD(NonAssignmentExpression()) NonAssignmentExpression()
 }
 
 void NonAssignmentExpression() :
@@ -2142,9 +2129,8 @@ void EqualityExpression() :
 void EqualityExpressionPrime() :
 {}
 {
-  <DBL_EQUAL> RelationalExpression() EqualityExpressionPrime()
-  | <EXCL_EQUAL> RelationalExpression() EqualityExpressionPrime()
-  | {}
+  [ (<DBL_EQUAL> RelationalExpression() EqualityExpressionPrime()
+  | <EXCL_EQUAL> RelationalExpression() EqualityExpressionPrime()) ]
 }
 
 void RelationalExpression() :
@@ -2156,13 +2142,12 @@ void RelationalExpression() :
 void RelationalExpressionPrime() :
 {}
 {
-  <LESS> ShiftExpression() RelationalExpressionPrime()
+  [ (<LESS> ShiftExpression() RelationalExpressionPrime()
   | <GREATER> ShiftExpression() RelationalExpressionPrime()
   | <LESS_EQUAL> ShiftExpression() RelationalExpressionPrime()
   | <GREATER_EQUAL> ShiftExpression() RelationalExpressionPrime()
   | <IS> Type() RelationalExpressionPrime()
-  | <AS> Type() RelationalExpressionPrime()
-  | {}
+  | <AS> Type() RelationalExpressionPrime()) ]
 }
 
 void ShiftExpression() :
@@ -2174,9 +2159,8 @@ void ShiftExpression() :
 void ShiftExpressionPrime() :
 {}
 {
-  <DBL_LESS> AdditiveExpression() ShiftExpressionPrime()
-  | <DBL_GREATER> AdditiveExpression() ShiftExpressionPrime()
-  | {}
+  [ (<DBL_LESS> AdditiveExpression() ShiftExpressionPrime()
+  | <DBL_GREATER> AdditiveExpression() ShiftExpressionPrime()) ]
 }
 
 void AdditiveExpression() :
@@ -2188,9 +2172,8 @@ void AdditiveExpression() :
 void AdditiveExpressionPrime() :
 {}
 {
-  <PLUS> MultiplicativeExpression() AdditiveExpressionPrime()
-  | <MINUS> MultiplicativeExpression() AdditiveExpressionPrime()
-  | {}
+  [ (<PLUS> MultiplicativeExpression() AdditiveExpressionPrime()
+  | <MINUS> MultiplicativeExpression() AdditiveExpressionPrime()) ]
 }
 
 void MultiplicativeExpression() :
@@ -2202,10 +2185,9 @@ void MultiplicativeExpression() :
 void MultiplicativeExpressionPrime() :
 {}
 {
-  <ASTERISK> UnaryExpression() MultiplicativeExpressionPrime()
+  [ (<ASTERISK> UnaryExpression() MultiplicativeExpressionPrime()
   | <SLASH> UnaryExpression() MultiplicativeExpressionPrime()
-  | <PERCENT> UnaryExpression() MultiplicativeExpressionPrime()
-  | {}
+  | <PERCENT> UnaryExpression() MultiplicativeExpressionPrime()) ]
 }
 
 void UnaryExpression() :
@@ -2238,10 +2220,9 @@ void PrimaryExpression() :
 void PrimaryExpressionPrime() :
 {}
 {
-  <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
+  [ LOOKAHEAD(<DOT> | <LPAREN> | <MINUS_GREATER>) (<DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
   | <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
-  | <MINUS_GREATER> Identifier() PrimaryExpressionPrime()
-  | {}
+  | <MINUS_GREATER> Identifier() PrimaryExpressionPrime()) ]
    // | <DBL_PLUS> PrimaryExpressionPrime()
    // | <DBL_MINUS> PrimaryExpressionPrime()
 }
@@ -2293,27 +2274,26 @@ void PrimaryNoArrayCreationExpression() :
 void PrimaryNoArrayCreationExpressionPrime2() :
 {}
 {
-  <LBRACKET> ExpressionList() <RBRACKET> PrimaryNoArrayCreationExpressionPrime2()
+  [ LOOKAHEAD(<LBRACKET> ExpressionList()) <LBRACKET> ExpressionList() <RBRACKET> PrimaryNoArrayCreationExpressionPrime2() ]
   // | <LBRACKET> Expression() <RBRACKET> PrimaryNoArrayCreationExpressionPrime2()
-  | {}
 }
 
 void Literal() :
-{ Token t; }
+{}
 {
-  t = <TRUE>                    { jjtThis.value = t.image; }
-  | t = <FALSE>                 { jjtThis.value = t.image; }
-  | t = <INTEGER_LITERAL>       { jjtThis.value = t.image; }
-  | t = <REAL_LITERAL>          { jjtThis.value = t.image; }
-  | t = <CHARACTER_LITERAL>     { jjtThis.value = t.image; }
-  | t = <STRING_LITERAL>        { jjtThis.value = t.image; }
-  | t = <NULL>                  { jjtThis.value = t.image; }
+  <TRUE>
+  | <FALSE>
+  | <INTEGER_LITERAL>
+  | <REAL_LITERAL>
+  | <CHARACTER_LITERAL>
+  | <STRING_LITERAL>
+  | <NULL>
 }
 
 void Identifier() :
 { Token t; }
 {
-  t = <IDENTIFIER>              { jjtThis.value = t.image; }
+  <IDENTIFIER>
 }
 
 void SimpleName() :
@@ -2357,8 +2337,7 @@ void ExpressionList() :
 void MoreExpressions() :
 {}
 {
-  LOOKAHEAD(<COMMA> Expression()) <COMMA> Expression() MoreExpressions()
-  | {}
+  [ LOOKAHEAD(<COMMA> Expression()) <COMMA> Expression() MoreExpressions() ]
 }
 
 void ThisAccess() :
@@ -2416,8 +2395,7 @@ void ObjectInitializer() :
 void MemberInitializerListOpt() :
 {}
 {
-  MemberInitializerList()
-  | {}
+  [ MemberInitializerList() ]
 }
 
 void MemberInitializerList() :
@@ -2429,8 +2407,7 @@ void MemberInitializerList() :
 void MoreMemberInitializers() :
 {}
 {
-  <COMMA> MemberInitializer() MoreMemberInitializers()
-  | {}
+  [ LOOKAHEAD(<COMMA> MemberInitializer()) <COMMA> MemberInitializer() MoreMemberInitializers() ]
 }
 
 void MemberInitializer() :
@@ -2469,8 +2446,7 @@ void ElementInitializerList() :
 void MoreElementInitializers() :
 {}
 {
-  <COMMA> ElementInitializer() MoreElementInitializers()
-  | {}
+  [ LOOKAHEAD(<COMMA> ElementInitializer()) <COMMA> ElementInitializer() MoreElementInitializers() ]
 }
 
 void ElementInitializer() :
@@ -2514,8 +2490,7 @@ void MemberDeclaratorList() :
 void MoreMemberDeclarators() :
 {}
 {
-  <COMMA> MemberDeclarator() MoreMemberDeclarators()
-  | {}
+  [ LOOKAHEAD(<COMMA> MemberDeclarator()) <COMMA> MemberDeclarator() MoreMemberDeclarators() ]
 }
 
 void MemberDeclarator() :
@@ -2539,26 +2514,30 @@ void NullConditionalMemberAccess() :
 void NullConditionalOperationsOpt() :
 {}
 {
-  NullConditionalOperations()
-  | {}
+  [ LOOKAHEAD(NullConditionalOperations()) NullConditionalOperations() ]
 }
 
 void NullConditionalOperations() :
 {}
 {
-  LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
-  | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
+  LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrimeOpt()
+  | <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrimeOpt()
+}
+
+void NullConditionalOperationsPrimeOpt() :
+{}
+{
+  [ LOOKAHEAD(NullConditionalOperationsPrime()) NullConditionalOperationsPrime() ]
 }
 
 void NullConditionalOperationsPrime() :
 {}
 {
-  LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
-  | LOOKAHEAD(<QUESTION> <LBRACKET>) <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
-  | <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrime()
-  | <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrime()
-  | <LPAREN> ArgumentListOpt() <RPAREN> NullConditionalOperationsPrime()
-  | {}
+  LOOKAHEAD(<QUESTION> <DOT>) <QUESTION> <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrimeOpt()
+  | LOOKAHEAD(<QUESTION> <LBRACKET>) <QUESTION> <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrimeOpt()
+  | <DOT> Identifier() TypeArgumentListOpt() NullConditionalOperationsPrimeOpt()
+  | <LBRACKET> ArgumentList() <RBRACKET> NullConditionalOperationsPrimeOpt()
+  | <LPAREN> ArgumentListOpt() <RPAREN> NullConditionalOperationsPrimeOpt()
 }
 
 void TypeofExpression() :
@@ -2769,8 +2748,7 @@ void ArrayCreationExpression() :
 void RankSpecifierListOpt() :
 {}
 {
-  RankSpecifierList()
-  | {}
+  [ LOOKAHEAD(RankSpecifierList()) RankSpecifierList() ]
 }
 
 void ArrayInitializerOpt() :
@@ -2801,8 +2779,7 @@ void VariableInitializerList() :
 void MoreVariableInitializers() :
 {}
 {
-  LOOKAHEAD(<COMMA> VariableInitializer()) <COMMA> VariableInitializer() MoreVariableInitializers()
-  | {}
+  [ LOOKAHEAD(<COMMA> VariableInitializer()) <COMMA> VariableInitializer() MoreVariableInitializers() ]
 }
 
 void NullConditionalExpression() :
@@ -2920,8 +2897,7 @@ void FromClause() :
 void TypeOpt() :
 {}
 {
-  Type()
-  | {}
+  [ LOOKAHEAD(Type()) Type() ]
 }
 
 void QueryBody() :
@@ -2939,8 +2915,7 @@ void QueryBodyClausesOpt() :
 void QueryContinuationOpt() :
 {}
 {
-  QueryContinuation()
-  | {}
+  [ LOOKAHEAD(QueryContinuation()) QueryContinuation() ]
 }
 
 void QueryBodyClauses() :
@@ -3083,6 +3058,33 @@ void Statement() :
   | LabeledStatement()
 }
 
+void EmbeddedStatementLookahead() :
+{}
+{
+  LOOKAHEAD(ExpressionStatement()) ExpressionStatement()
+  | <LBRACE>
+  | <SEMICOLON>
+  | <IF>
+  | <SWITCH>
+  | <WHILE>
+  | <DO>
+  | <FOR>
+  | <FOREACH>
+  | <BREAK>
+  | <CONTINUE>
+  | <GOTO>
+  | <RETURN>
+  | <THROW>
+  | <TRY>
+  | <CHECKED>
+  | <UNCHECKED>
+  | <LOCK>
+  | <USING>
+  | <YIELD>
+  | <UNSAFE>
+  | <FIXED>
+}
+
 void LabeledStatement() :
 {}
 {
@@ -3158,18 +3160,18 @@ void EmbeddedStatement() :
 {}
 {
   Block()
-  | EmptyStatement()
-  | LOOKAHEAD(ExpressionStatement()) ExpressionStatement()
   | SelectionStatement()
   | IterationStatement()
   | JumpStatement()
   | TryStatement()
-  | LOOKAHEAD(<CHECKED> <LBRACE>) CheckedStatement()
-  | UncheckedStatement()
+  | LOOKAHEAD(CheckedStatement()) CheckedStatement()
+  | LOOKAHEAD(UncheckedStatement()) UncheckedStatement()
   | LockStatement()
   | UsingStatement()
   | YieldStatement()
   | EmbeddedStatementUnsafe()
+  | EmptyStatement()
+  | LOOKAHEAD(ExpressionStatement()) ExpressionStatement()
 }
 
 void Block() :
@@ -3304,8 +3306,7 @@ void ForConditionOpt() :
 void ForIteratorOpt() :
 {}
 {
-  ForIterator()
-  | {}
+  [ ForIterator() ]
 }
 
 void ForInitializer() :
