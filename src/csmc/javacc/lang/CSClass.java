@@ -7,9 +7,9 @@ public class CSClass {
     private List<CSModifier> modifiers;
     private String name;
     private List<String> typeParameters;
-    private String parentName;
     private CSClass parent;
     private List<CSClass> children;
+    private CSNamespace namespace;
 
     private List<CSParameter> constants;
     private List<CSParameter> fields;
@@ -22,13 +22,13 @@ public class CSClass {
     private List<CSConstructor> constructors;
     private List<CSConstructor> staticConstructors;
 
-    public CSClass(String className) {
+    public CSClass(String className, CSNamespace namespace) {
         this.modifiers = new ArrayList<>();
         this.name = className;
         this.typeParameters = new ArrayList<>();
-        this.parentName = "";
         this.parent = null;
         this.children = new ArrayList<>();
+        this.namespace = namespace;
 
         this.constants = new ArrayList<>();
         this.fields = new ArrayList<>();
@@ -40,6 +40,10 @@ public class CSClass {
         this.indexers = new ArrayList<>();
         this.constructors = new ArrayList<>();
         this.staticConstructors = new ArrayList<>();
+    }
+
+    public CSNamespace getNamespace() {
+        return namespace;
     }
 
     public List<CSModifier> getModifiers() {
@@ -100,14 +104,6 @@ public class CSClass {
 
     public List<CSClass> getChildren() {
         return children;
-    }
-
-    public String getParentName() {
-        return this.parentName;
-    }
-
-    public void setParentName (String name) {
-        this.parentName = name;
     }
 
     public void setParent(CSClass parent) {
@@ -199,5 +195,10 @@ public class CSClass {
         if (!staticConstructors.contains(staticConstructor)) {
             staticConstructors.add(staticConstructor);
         }
+    }
+
+    @Override
+    public String toString() {
+        return namespace.toString().equals("global") ? name : namespace.toString() + "." + name;
     }
 }
