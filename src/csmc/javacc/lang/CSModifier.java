@@ -10,5 +10,7 @@ public enum CSModifier {
     SEALED,
     STATIC,
     UNSAFE,
-    PARTIAL
+    VOLATILE,
+    PARTIAL,
+    EXTERN
 }

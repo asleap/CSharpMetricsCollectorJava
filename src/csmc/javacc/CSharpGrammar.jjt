@@ -948,7 +948,7 @@ void ClassMemberDeclaration() :
   | LOOKAHEAD(AttributesOpt() ConstantModifierList() <CONST>) ConstantDeclaration()
   | LOOKAHEAD(AttributesOpt() EventModifierList() <EVENT>) EventDeclaration()
   | LOOKAHEAD(AttributesOpt() IndexerModifierList() IndexerDeclaratorLookahead()) IndexerDeclaration()
-  | LOOKAHEAD([AttributesOpt() OperatorModifierList()] OperatorDeclarator()) OperatorDeclaration()
+  | LOOKAHEAD(AttributesOpt() OperatorModifierList() OperatorDeclarator()) OperatorDeclaration()
   | LOOKAHEAD(DestructorDeclarationLookahead()) DestructorDeclaration()
   | LOOKAHEAD(AttributesOpt() ConstructorModifierList() Identifier() <LPAREN>) ConstructorDeclaration()
   | LOOKAHEAD([AttributesOpt() StaticConstructorModifiers()] Identifier() <LPAREN> <RPAREN>) StaticConstructorDeclaration()
@@ -1427,8 +1427,7 @@ void OperatorDeclaration() :
 void OperatorModifierList() :
 {}
 {
-  LOOKAHEAD(OperatorModifier() OperatorModifierList()) OperatorModifier() OperatorModifierList()
-  | OperatorModifier()
+    [ OperatorModifier() OperatorModifierList() ]
 }
 
 void OperatorModifier() :
@@ -1664,21 +1663,21 @@ void StaticConstructorDeclaration() :
 void StaticConstructorModifiers() :
 {}
 {
-
-  LOOKAHEAD(StaticConstructorModifiersUnsafe()) StaticConstructorModifiersUnsafe()
-  | LOOKAHEAD(ExternOpt() <STATIC>) ExternOpt() <STATIC>
-  | <STATIC> ExternOpt()
+//  LOOKAHEAD(StaticConstructorModifiersUnsafe()) StaticConstructorModifiersUnsafe()
+//  | ExternOpt() <STATIC> ExternOpt()
+    ( <EXTERN> | <UNSAFE> )* <STATIC> (<EXTERN> | <UNSAFE>)*
 }
 
 void StaticConstructorModifiersUnsafe() :
 {}
 {
-  LOOKAHEAD(ExternOpt() UnsafeOpt() <STATIC>) ExternOpt() UnsafeOpt() <STATIC>
-  | LOOKAHEAD(UnsafeOpt() ExternOpt() <STATIC>) UnsafeOpt() ExternOpt() <STATIC>
-  | LOOKAHEAD(ExternOpt() <STATIC> UnsafeOpt()) ExternOpt() <STATIC> UnsafeOpt()
-  | LOOKAHEAD(UnsafeOpt() <STATIC> ExternOpt()) UnsafeOpt() <STATIC> ExternOpt()
-  | LOOKAHEAD(<STATIC> ExternOpt() UnsafeOpt()) <STATIC> ExternOpt() UnsafeOpt()
-  | <STATIC> UnsafeOpt() ExternOpt()
+    ( <EXTERN> | <UNSAFE> )* <STATIC> (<EXTERN> | <UNSAFE>)*
+//  LOOKAHEAD(ExternOpt() UnsafeOpt() <STATIC>) ExternOpt() UnsafeOpt() <STATIC>
+//  | LOOKAHEAD(UnsafeOpt() ExternOpt() <STATIC>) UnsafeOpt() ExternOpt() <STATIC>
+//  | LOOKAHEAD(ExternOpt() <STATIC> UnsafeOpt()) ExternOpt() <STATIC> UnsafeOpt()
+//  | LOOKAHEAD(UnsafeOpt() <STATIC> ExternOpt()) UnsafeOpt() <STATIC> ExternOpt()
+//  | LOOKAHEAD(<STATIC> ExternOpt() UnsafeOpt()) <STATIC> ExternOpt() UnsafeOpt()
+//  | <STATIC> UnsafeOpt() ExternOpt()
 }
 
 void StaticConstructorBody() :

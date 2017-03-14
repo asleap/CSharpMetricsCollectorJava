@@ -149,7 +149,7 @@ public class CSClass {
 
     public void addField(CSParameter field) {
         if (!fields.contains(field)) {
-            constants.add(field);
+            fields.add(field);
         }
     }
 

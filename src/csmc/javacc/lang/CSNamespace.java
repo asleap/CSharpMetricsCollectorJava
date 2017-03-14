@@ -81,7 +81,12 @@ public class CSNamespace {
     }
 
     public CSNamespace getNamespace(String namespaceName) {
-
+        // return namespaces.
+        for (CSNamespace namespace : namespaces) {
+            if (namespace.getName().equals(namespaceName))
+                return namespace;
+        }
+        return null;
     }
 
     public List<CSClass> getClasses() {
