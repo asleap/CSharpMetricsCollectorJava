@@ -7,6 +7,7 @@ public class CSClass {
     private List<CSModifier> modifiers;
     private String name;
     private List<String> typeParameters;
+    private String parentName;
     private CSClass parent;
     private List<CSClass> children;
 
@@ -25,6 +26,7 @@ public class CSClass {
         this.modifiers = new ArrayList<>();
         this.name = className;
         this.typeParameters = new ArrayList<>();
+        this.parentName = "";
         this.parent = null;
         this.children = new ArrayList<>();
 
@@ -98,6 +100,14 @@ public class CSClass {
 
     public List<CSClass> getChildren() {
         return children;
+    }
+
+    public String getParentName() {
+        return this.parentName;
+    }
+
+    public void setParentName (String name) {
+        this.parentName = name;
     }
 
     public void setParent(CSClass parent) {
