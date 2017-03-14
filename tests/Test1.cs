@@ -1,7 +1,14 @@
 using System.Collections;
+using MyAbstractMath = AbstractMath;
+
+namespace AbstractMath {
+    public class MathClass {
+
+    }
+}
 
 namespace Math {
-    public abstract class MathHelper : AbstractMath.MathClass, IMathable
+    public abstract class MathHelper : MyAbstractMath::MathClass, IMathable
     {
         public static float lerp(float a, float b, float t)
         {

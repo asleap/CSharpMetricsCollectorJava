@@ -4,13 +4,19 @@ import csmc.javacc.generated.syntaxtree.*;
 import csmc.javacc.generated.visitor.GJDepthFirst;
 import csmc.javacc.generated.visitor.TreeDumper;
 import csmc.javacc.lang.CSClass;
+import csmc.javacc.lang.CSModifier;
 import csmc.javacc.lang.CSNamespace;
 import csmc.javacc.parse.context.ClassContext;
 import csmc.javacc.parse.context.NamespaceContext;
 import csmc.javacc.parse.context.ParseContext;
+import csmc.javacc.util.Tuple2;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Visitor that parses program information from AST
@@ -18,24 +24,39 @@ import java.io.StringWriter;
 public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     private ParseDriver parseDriver;
 
-    private NamespaceContext newNamespaceContext(ParseContext parent, String namespaceName) {
-        NamespaceContext ctx = (NamespaceContext) parent;
-        CSNamespace namespace = ((NamespaceContext) parent).getValue().getNamespace(namespaceName);
-
-        return new NamespaceContext(parent, namespace.getName(), namespace);
-    }
-
-    private ClassContext newClassContext(ParseContext parent, String className) {
-        String parentRepr = parent == null ? "" : parent.toString();
-        CSClass csClass = parseDriver.getClass(parentRepr + "." + className);
-        if (csClass == null) {
-            csClass = parseDriver.newClass(parentRepr + "." + className);
-        }
-        return new ClassContext(parent, className, csClass);
-    }
-
     public ParseVisitor(ParseDriver parseDriver) {
         this.parseDriver = parseDriver;
+    }
+
+    /**
+     * Create new namespace context with the given fully-qualified name.
+     * First it searches for existing namespace.
+     * If not found, it creates new namespace in proper location.
+     */
+    private NamespaceContext newNamespaceContext(ParseContext parentCtx, String namespaceName) {
+        NamespaceContext ctx = (NamespaceContext) parentCtx;
+        CSNamespace namespace = parseDriver.searchNamespaceOrCreate(ctx.getValue(), namespaceName);
+        return new NamespaceContext(parentCtx, namespace.getName(), namespace);
+    }
+
+    /**
+     * Create new class context with given name.
+     * First it searches for existing class.
+     * If not found, it creates new class in namespace provided by parent context.
+     */
+    private ClassContext newClassContext(ParseContext parentCtx, String className) {
+        CSClass csClass = null;
+        if (parentCtx instanceof NamespaceContext) {
+            NamespaceContext ctx = (NamespaceContext) parentCtx;
+            csClass = parseDriver.searchClassOrCreate(ctx.getValue(), className);
+        } else if (parentCtx instanceof ClassContext) {
+            ClassContext ctx = (ClassContext) parentCtx;
+            csClass = parseDriver.searchClassOrCreate(ctx.getValue().getNamespace(), ctx.getValue().getName() + "." + className);
+        }
+        if (csClass == null) {
+            throw new RuntimeException("Wrong context " + parentCtx.toString());
+        }
+        return new ClassContext(parentCtx, csClass.getName(), csClass);
     }
 
     /**
@@ -113,7 +134,6 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
      */
     @Override
     public ParseContext visit(NamespaceDeclaration n, ParseContext argu) {
-        // Get namespace name and create context
         StringWriter writer = new StringWriter();
         TreeDumper dumper = new TreeDumper(writer);
         n.f1.accept(dumper);
@@ -147,10 +167,43 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
         // Get base class and inherited interfaces
         writer.getBuffer().setLength(0);
         n.f6.accept(dumper);
-        String[] inherited = writer.toString().trim().replaceFirst(":", "").split(",");
-        if (inherited.length > 1 && !inherited[0].startsWith("I")) {
+        String[] inherited = Stream.of(writer.toString().replaceFirst(":", "").split(","))
+                .map(String::trim)
+                .toArray(String[]::new);
+        if (inherited.length >= 1 && !inherited[0].startsWith("I") && !inherited[0].isEmpty()) {
             String baseClassName = inherited[0];
+            if (baseClassName.split("::").length == 2) {
+                String[] aliasAndName = baseClassName.split("::");
+                String aliasQualifier = parseDriver.searchAlias(ctx.getValue().getNamespace(), aliasAndName[0]);
+                if (aliasQualifier == null) {
+                    throw new RuntimeException("Could not find alias " + aliasAndName[0]);
+                }
+                baseClassName = aliasQualifier + "." + aliasAndName[1];
+            }
+            String[] qualifiedName = baseClassName.split("\\.");
+            Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(ctx.getValue().getNamespace(), qualifiedName);
+            CSNamespace foundNamespace = search.getFirst();
+            String[] namePartsLeft = search.getSecond();
+            if (namePartsLeft.length == 1) {
+                CSClass csClass = parseDriver.searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                csClass.addChild(ctx.getValue());
+            } else {
+                parseDriver.addUnresolvedNamespace(qualifiedName, ctx.getValue());
+            }
         }
+
+        // Parse modifiers, TODO: refactor this
+        List<CSModifier> modifiers = new ArrayList<>();
+        ClassModifierList modifierListNode = n.f1;
+        while (modifierListNode.f0.present()) {
+            ClassModifier modifier = (ClassModifier) ((NodeSequence) modifierListNode.f0.node).nodes.get(0);
+            NodeToken modifierToken = (NodeToken) modifier.f0.choice;
+            modifiers.add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            modifierListNode = (ClassModifierList) ((NodeSequence) modifierListNode.f0.node).nodes.get(1);
+        }
+        modifiers.forEach(csModifier -> ctx.getValue().addModifier(csModifier));
+
+        // TODO: add type parameters parsing
 
         try {
             writer.close();

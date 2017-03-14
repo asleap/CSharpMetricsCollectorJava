@@ -1,9 +1,8 @@
 package csmc.javacc.lang;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import csmc.javacc.util.Tuple2;
+
+import java.util.*;
 
 public class CSNamespace {
     private String name;
@@ -58,6 +57,10 @@ public class CSNamespace {
         return aliases;
     }
 
+    public String searchAlias(String aliasName) {
+        return aliases.containsKey(aliasName) ? aliases.get(aliasName) : parent == null ? null : parent.searchAlias(aliasName);
+    }
+
     public void addAlias(String aliasName, String importName) {
         if (this.aliases.containsKey(aliasName)) {
             throw new IllegalArgumentException("Namespace "
@@ -80,10 +83,6 @@ public class CSNamespace {
         return namespaces;
     }
 
-    public CSNamespace getNamespace(String namespaceName) {
-
-    }
-
     public List<CSClass> getClasses() {
         return classes;
     }
@@ -102,7 +101,18 @@ public class CSNamespace {
 
     public void addClass(CSClass csClass) {
         if (!classes.contains(csClass)) {
+            if (csClass.getNamespace() != this) {
+                throw new IllegalArgumentException(
+                        "Trying to add class " +
+                        csClass.getName() +
+                        " that already defined in other namespace");
+            }
             classes.add(csClass);
         }
+    }
+
+    @Override
+    public String toString() {
+        return parent == null || parent.getName().equals("global") ? name : parent.toString() + "." + name;
     }
 }

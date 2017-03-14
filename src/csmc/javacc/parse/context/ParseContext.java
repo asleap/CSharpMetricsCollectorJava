@@ -23,7 +23,7 @@ public abstract class ParseContext<K, V> {
     }
 
     /**
-     * Return fully qualified name
+     * Return context hierarchy
      */
     @Override
     public String toString() {
