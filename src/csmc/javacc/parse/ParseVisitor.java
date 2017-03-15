@@ -1,6 +1,5 @@
 package csmc.javacc.parse;
 
-import csmc.javacc.generated.CSharpParserConstants;
 import csmc.javacc.generated.syntaxtree.*;
 import csmc.javacc.generated.visitor.GJDepthFirst;
 import csmc.javacc.generated.visitor.TreeDumper;
@@ -11,7 +10,6 @@ import csmc.javacc.util.Tuple2;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -185,7 +183,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 CSClass csClass = parseDriver.searchClassOrCreate(foundNamespace, namePartsLeft[0]);
                 csClass.addChild(ctx.getValue());
             } else {
-                parseDriver.addUnresolvedNamespace(qualifiedName, ctx.getValue());
+                parseDriver.addUnresolvedParent(ctx.getValue(), qualifiedName);
             }
         }
 

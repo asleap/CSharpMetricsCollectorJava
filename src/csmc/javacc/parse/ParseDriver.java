@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -19,12 +20,12 @@ import java.util.List;
  */
 public class ParseDriver {
     private CSNamespace global;
-    private List<Tuple2<String[], CSClass>> unresolvedNamespaces;
+    private List<Tuple2<CSClass, String[]>> unresolvedParents;
 
     public ParseDriver() {
         // Create 'global' namespace
         this.global = new CSNamespace("global", null);
-        unresolvedNamespaces = new ArrayList<>();
+        unresolvedParents = new ArrayList<>();
     }
 
     /**
@@ -108,15 +109,37 @@ public class ParseDriver {
     /**
      * Add unresolved namespace and related class for post parse processing
      */
-    public void addUnresolvedNamespace(String[] aliasName, CSClass relatedClass) {
-        unresolvedNamespaces.add(new Tuple2<>(aliasName, relatedClass));
+    public void addUnresolvedParent(CSClass relatedClass, String[] aliasName) {
+        unresolvedParents.add(new Tuple2<>(relatedClass, aliasName));
     }
 
     /**
      * Post parse processing
      */
     private void postParse() {
-        // TODO: implement
+        int oldSize;
+        do {
+            oldSize = unresolvedParents.size();
+            for (Iterator<Tuple2<CSClass, String[]>> it = unresolvedParents.iterator(); it.hasNext();) {
+                Tuple2<CSClass, String[]> current = it.next();
+                CSClass child = current.getFirst();
+                String[] parentName = current.getSecond();
+                Tuple2<CSNamespace, String[]> search = searchClosestNamespace(child.getNamespace(), parentName);
+                CSNamespace foundNamespace = search.getFirst();
+                String[] namePartsLeft = search.getSecond();
+                if (namePartsLeft.length == 1) {
+                    CSClass parent = searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                    parent.addChild(child);
+                    it.remove();
+                }
+            }
+        } while (unresolvedParents.size() < oldSize);
+
+        for (Tuple2<CSClass, String[]> tuple : unresolvedParents) {
+            System.out.println("Could not find base class "
+                    + String.join(".", tuple.getSecond())
+                    + " for child class " + tuple.getFirst().toString());
+        }
     }
 
     public void parse(String fileName) {

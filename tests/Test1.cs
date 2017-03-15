@@ -1,12 +1,6 @@
 using System.Collections;
 using MyAbstractMath = AbstractMath;
 
-namespace AbstractMath {
-    public class MathClass {
-
-    }
-}
-
 namespace Math {
     public abstract class MathHelper : MyAbstractMath::MathClass, IMathable
     {
@@ -30,5 +24,11 @@ namespace Math {
         {
             return -2 * t * t * t + 3 * t * t;
         }
+    }
+}
+
+namespace AbstractMath {
+    public class MathClass {
+
     }
 }
