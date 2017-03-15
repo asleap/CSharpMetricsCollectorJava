@@ -76,3 +76,9 @@ namespace Math {
         }
     }
 }
+
+namespace AbstractMath {
+    public class MathClass {
+
+    }
+}

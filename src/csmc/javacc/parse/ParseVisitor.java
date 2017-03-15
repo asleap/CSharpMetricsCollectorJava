@@ -183,7 +183,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 CSClass csClass = parseDriver.searchClassOrCreate(foundNamespace, namePartsLeft[0]);
                 csClass.addChild(ctx.getValue());
             } else {
-                parseDriver.addUnresolvedNamespace(qualifiedName, ctx.getValue());
+                parseDriver.addUnresolvedParent(ctx.getValue(), qualifiedName);
             }
         }
 
