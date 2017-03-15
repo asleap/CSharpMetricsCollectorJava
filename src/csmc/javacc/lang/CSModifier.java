@@ -12,5 +12,14 @@ public enum CSModifier {
     UNSAFE,
     VOLATILE,
     PARTIAL,
-    EXTERN
+    EXTERN,
+    REF,
+    IMPLICIT,
+    EXPLICIT,
+    OUT,
+    IN,
+    READONLY,
+    VIRTUAL,
+    OVERRIDE,
+    THIS
 }

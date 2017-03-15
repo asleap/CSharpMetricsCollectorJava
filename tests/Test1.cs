@@ -2,7 +2,51 @@ using System.Collections;
 using MyAbstractMath = AbstractMath;
 
 namespace AbstractMath {
-    public class MathClass {
+    public class MathClass<T> {
+        public float this[int index]
+        {
+            get
+            {
+                return temps[index];
+            }
+
+            set
+            {
+                temps[index] = value;
+            }
+        }
+        public string Name
+        {
+            get
+            {
+               return myName;
+            }
+            set
+            {
+               myName = value;
+            }
+        }
+        public static float lerp(ref float a, float b, float t)
+        {
+            return a + (b - a) * t;
+        }
+        public static double t = 0.4;
+        public const int a = 7;
+        public event ChangedEventHandler Changed;
+        public static Complex operator +(Complex c1, Complex c2)
+        {
+            return new Complex(c1.real + c2.real, c1.imaginary + c2.imaginary);
+        }
+
+        public static implicit operator DBBool(bool x)
+        {
+            return x? dbTrue: dbFalse;
+        }
+        public static explicit operator bool(DBBool x)
+        {
+            if (x.value == 0) throw new InvalidOperationException();
+            return x.value > 0;
+        }
 
     }
 }
