@@ -1,7 +1,7 @@
 package csmc.javacc.parse.context;
 
-import csmc.javacc.lang.CSMethod;
-import csmc.javacc.util.Tuple2;
+import csmc.lang.CSMethod;
+import csmc.javacc.parse.util.Tuple2;
 
 public class AccessorDeclarationContext extends ParseContext<Tuple2<String, String>, Tuple2<CSMethod, CSMethod>> {
 

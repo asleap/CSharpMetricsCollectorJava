@@ -1,6 +1,6 @@
 package csmc.javacc.parse.context;
 
-import csmc.javacc.lang.CSNamespace;
+import csmc.lang.CSNamespace;
 
 /**
  * NamespaceContext indicates current namespace name.

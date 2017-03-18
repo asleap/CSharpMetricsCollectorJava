@@ -3,9 +3,9 @@ package csmc.javacc.parse;
 import csmc.javacc.generated.syntaxtree.*;
 import csmc.javacc.generated.visitor.GJDepthFirst;
 import csmc.javacc.generated.visitor.TreeDumper;
-import csmc.javacc.lang.*;
+import csmc.lang.*;
 import csmc.javacc.parse.context.*;
-import csmc.javacc.util.Tuple2;
+import csmc.javacc.parse.util.Tuple2;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -466,7 +466,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String constructorInitializer = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().addConstructor(new CSConstructor(modifiers, ctx.getKey(), ctx.getKey(), formalParameters, new ArrayList<String>(), body, constructorInitializer));
+            ctx.getValue().addConstructor(new CSConstructor(modifiers, ctx.getKey(), ctx.getKey(), formalParameters, new ArrayList<>(), body, constructorInitializer));
 
             try {
                 writer.close();

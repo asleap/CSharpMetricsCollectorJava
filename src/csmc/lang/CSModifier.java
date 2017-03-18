@@ -1,4 +1,4 @@
-package csmc.javacc.lang;
+package csmc.lang;
 
 public enum CSModifier {
     NEW,

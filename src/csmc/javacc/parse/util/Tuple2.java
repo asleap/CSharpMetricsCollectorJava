@@ -1,4 +1,4 @@
-package csmc.javacc.util;
+package csmc.javacc.parse.util;
 
 public class Tuple2<F, S> {
     private F first;

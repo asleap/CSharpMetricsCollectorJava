@@ -1,6 +1,6 @@
 package csmc.javacc.parse.context;
 
-import csmc.javacc.lang.CSClass;
+import csmc.lang.CSClass;
 
 /**
  * ClassContext contains current class name, associated CK metric

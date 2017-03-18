@@ -1,4 +1,4 @@
-package csmc.javacc.lang;
+package csmc.lang;
 
 import java.util.ArrayList;
 import java.util.List;

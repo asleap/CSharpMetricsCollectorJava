@@ -3,10 +3,10 @@ package csmc.javacc.parse;
 import csmc.javacc.generated.CSharpParser;
 import csmc.javacc.generated.ParseException;
 import csmc.javacc.generated.syntaxtree.Input;
-import csmc.javacc.lang.CSClass;
-import csmc.javacc.lang.CSNamespace;
+import csmc.lang.CSClass;
+import csmc.lang.CSNamespace;
 import csmc.javacc.parse.context.NamespaceContext;
-import csmc.javacc.util.Tuple2;
+import csmc.javacc.parse.util.Tuple2;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

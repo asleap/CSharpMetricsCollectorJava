@@ -1,6 +1,4 @@
-package csmc.javacc.lang;
-
-import csmc.javacc.util.Tuple2;
+package csmc.lang;
 
 import java.util.*;
 

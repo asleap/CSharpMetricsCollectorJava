@@ -1,6 +1,6 @@
 package csmc.javacc.parse.context;
 
-import csmc.javacc.lang.CSParameter;
+import csmc.lang.CSParameter;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package csmc.javacc;
+package csmc;
 
 import csmc.javacc.parse.ParseDriver;
 

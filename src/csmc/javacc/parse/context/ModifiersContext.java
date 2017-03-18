@@ -1,6 +1,6 @@
 package csmc.javacc.parse.context;
 
-import csmc.javacc.lang.CSModifier;
+import csmc.lang.CSModifier;
 
 import java.util.List;
 
