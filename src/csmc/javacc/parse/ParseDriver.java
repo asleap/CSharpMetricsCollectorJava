@@ -20,7 +20,8 @@ import java.util.List;
  */
 public class ParseDriver {
     private CSNamespace global;
-    private List<Tuple2<CSClass, String[]>> unresolvedParents;
+    private List<Tuple2<CSClass, String[]>> unresolvedParents; // Child class, fully-qualified name of base class
+    private List<Tuple2<CSClass, String[]>> unresolvedUsedClasses; // Using class, fully-qualified names of used class
 
     public ParseDriver() {
         // Create 'global' namespace
@@ -107,10 +108,17 @@ public class ParseDriver {
     }
 
     /**
-     * Add unresolved namespace and related class for post parse processing
+     * Add unresolved parent and related class for post parse processing
      */
-    public void addUnresolvedParent(CSClass relatedClass, String[] aliasName) {
-        unresolvedParents.add(new Tuple2<>(relatedClass, aliasName));
+    public void addUnresolvedParent(CSClass childClass, String[] baseClassName) {
+        unresolvedParents.add(new Tuple2<>(childClass, baseClassName));
+    }
+
+    /**
+     * Add unresolved used class name and its using class
+     */
+    public void addUnresolvedUsedClass(CSClass usingClass, String[] usedClassName) {
+        unresolvedUsedClasses.add(new Tuple2<>(usingClass, usedClassName));
     }
 
     /**
@@ -134,11 +142,32 @@ public class ParseDriver {
                 }
             }
         } while (unresolvedParents.size() < oldSize);
-
         for (Tuple2<CSClass, String[]> tuple : unresolvedParents) {
             System.out.println("Could not find base class "
                     + String.join(".", tuple.getSecond())
                     + " for child class " + tuple.getFirst().toString());
+        }
+
+        do {
+            oldSize = unresolvedUsedClasses.size();
+            for (Iterator<Tuple2<CSClass, String[]>> it = unresolvedUsedClasses.iterator(); it.hasNext(); ) {
+                Tuple2<CSClass, String[]> current = it.next();
+                CSClass usingClass = current.getFirst();
+                String[] usedClassName = current.getSecond();
+                Tuple2<CSNamespace, String[]> search = searchClosestNamespace(usingClass.getNamespace(), usedClassName);
+                CSNamespace foundNamespace = search.getFirst();
+                String[] namePartsLeft = search.getSecond();
+                if (namePartsLeft.length == 1) {
+                    CSClass usedClass = searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                    usingClass.addUsedClass(usedClass);
+                    it.remove();
+                }
+            }
+        } while (unresolvedUsedClasses.size() < oldSize);
+        for (Tuple2<CSClass, String[]> tuple : unresolvedUsedClasses) {
+            System.out.println("Could not find used class "
+                    + String.join(".", tuple.getSecond())
+                    + " for using class " + tuple.getFirst().toString());
         }
     }
 

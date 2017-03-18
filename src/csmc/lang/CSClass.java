@@ -9,6 +9,7 @@ public class CSClass {
     private List<String> typeParameters;
     private CSClass parent;
     private List<CSClass> children;
+    private List<CSClass> usedClasses;
     private CSNamespace namespace;
 
     private List<CSParameter> constants;
@@ -28,6 +29,7 @@ public class CSClass {
         this.typeParameters = new ArrayList<>();
         this.parent = null;
         this.children = new ArrayList<>();
+        this.usedClasses = new ArrayList<>();
         this.namespace = namespace;
 
         this.constants = new ArrayList<>();
@@ -100,6 +102,10 @@ public class CSClass {
 
     public CSClass getParent() {
         return parent;
+    }
+
+    public List<CSClass> getUsedClasses() {
+        return usedClasses;
     }
 
     public List<CSClass> getChildren() {
@@ -194,6 +200,12 @@ public class CSClass {
     public void addStaticConstructor(CSConstructor staticConstructor) {
         if (!staticConstructors.contains(staticConstructor)) {
             staticConstructors.add(staticConstructor);
+        }
+    }
+
+    public void addUsedClass(CSClass csClass) {
+        if (!usedClasses.contains(csClass)) {
+            usedClasses.add(csClass);
         }
     }
 

@@ -6,11 +6,17 @@ public abstract class CSClassEntity {
     private List<CSModifier> modifiers;
     private String type;
     private String name;
+    private CSClass csClass;
 
-    public CSClassEntity(List<CSModifier> modifiers, String type, String name) {
+    public CSClassEntity(CSClass csClass, List<CSModifier> modifiers, String type, String name) {
+        this.csClass = csClass;
         this.modifiers = modifiers;
         this.type = type;
         this.name = name;
+    }
+
+    public CSClass getCsClass() {
+        return csClass;
     }
 
     public List<CSModifier> getModifiers() {

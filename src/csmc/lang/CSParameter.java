@@ -3,7 +3,7 @@ package csmc.lang;
 import java.util.List;
 
 public class CSParameter extends CSClassEntity {
-    public CSParameter(List<CSModifier> modifiers, String type, String name) {
-        super(modifiers, type, name);
+    public CSParameter(CSClass csClass, List<CSModifier> modifiers, String type, String name) {
+        super(csClass, modifiers, type, name);
     }
 }

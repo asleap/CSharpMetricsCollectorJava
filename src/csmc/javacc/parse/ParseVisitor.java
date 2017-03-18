@@ -165,7 +165,8 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
         String[] inherited = Stream.of(writer.toString().replaceFirst(":", "").split(","))
                 .map(String::trim)
                 .toArray(String[]::new);
-        if (inherited.length >= 1 && !inherited[0].startsWith("I") && !inherited[0].isEmpty()) {
+        if (inherited.length >= 1 && ((!inherited[0].startsWith("I") && !inherited[0].isEmpty())
+                ||(inherited[0].startsWith("I") && inherited[0].length() >= 2 && Character.isLowerCase(inherited[0].charAt(1))))) {
             String baseClassName = inherited[0];
             if (baseClassName.split("::").length == 2) {
                 String[] aliasAndName = baseClassName.split("::");
@@ -230,7 +231,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             List<CSModifier> modifiers = new ArrayList<>();
             n.f1.accept(this, new ModifiersContext(ctx, constantName, modifiers));
 
-            ctx.getValue().addConstant(new CSParameter(modifiers, type, constantName));
+            ctx.getValue().addConstant(new CSParameter(ctx.getValue(), modifiers, type, constantName));
 
             NodeSequence moreDeclarators = (NodeSequence) n.f4.f1.f0.node;
             while (moreDeclarators != null) { // Try to read constant declarators
@@ -238,7 +239,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 dumper.flushWriter();
                 constantName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
-                ctx.getValue().addConstant(new CSParameter(modifiers, type, constantName));
+                ctx.getValue().addConstant(new CSParameter(ctx.getValue(), modifiers, type, constantName));
                 moreDeclarators = (NodeSequence) ((MoreConstantDeclarators) moreDeclarators.nodes.get(2)).f0.node;
             }
 
@@ -278,7 +279,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             List<CSModifier> modifiers = new ArrayList<>();
             n.f1.accept(this, new ModifiersContext(ctx, fieldName, modifiers));
 
-            ctx.getValue().addField(new CSParameter(modifiers, type, fieldName));
+            ctx.getValue().addField(new CSParameter(ctx.getValue(), modifiers, type, fieldName));
 
             NodeSequence moreDeclarators = (NodeSequence) n.f3.f1.f0.node;
             while (moreDeclarators != null) { // Try to read constant declarators
@@ -291,7 +292,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 dumper.flushWriter();
                 fieldName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
-                ctx.getValue().addField(new CSParameter(modifiers, type, fieldName));
+                ctx.getValue().addField(new CSParameter(ctx.getValue(), modifiers, type, fieldName));
                 moreDeclarators = (NodeSequence) ((MoreVariableDeclarators) moreDeclarators.nodes.get(2)).f0.node;
             }
 
@@ -337,7 +338,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             List<CSModifier> modifiers = new ArrayList<>(); // Method modifiers
             n.f0.f1.accept(this, new ModifiersContext(ctx, name, modifiers));
 
-            ctx.getValue().addMethod(new CSMethod(modifiers, type, name, formalParameters, typeParameters, methodBody));
+            ctx.getValue().addMethod(new CSMethod(ctx.getValue(), modifiers, type, name, formalParameters, typeParameters, methodBody));
 
             try {
                 writer.close();
@@ -419,7 +420,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             List<CSModifier> modifiers = new ArrayList<>(); // Modifiers
             n.f1.accept(this, new ModifiersContext(ctx, name, modifiers));
 
-            ctx.getValue().add(new CSParameter(modifiers, type, name));
+            ctx.getValue().add(new CSParameter((CSClass) ctx.getParent().getValue(), modifiers, type, name));
 
             try {
                 writer.close();
@@ -437,6 +438,10 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             if (((IdentifierContext) argu).getValue().length() > 0)
                 ((IdentifierContext) argu).getValue().append(".");
             ((IdentifierContext) argu).getValue().append(n.f0.toString());
+        } else if (argu instanceof VariableDeclarationContext) {
+            // Adds variable name into VariableDeclarationContext, which later will be parsed into variable list
+            VariableDeclarationContext ctx = (VariableDeclarationContext) argu;
+            ctx.getValue().add(n.f0.toString());
         }
         return super.visit(n, argu);
     }
@@ -544,7 +549,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 body = writer.toString().trim();
                 writer.getBuffer().setLength(0);
             }
-            ctx.getValue().addDestructor(new CSMethod(modifiers, ctx.getKey(), ctx.getKey(), new ArrayList<>(), new ArrayList<>(), body));
+            ctx.getValue().addDestructor(new CSMethod(ctx.getValue(), modifiers, ctx.getKey(), "~" + ctx.getKey(), new ArrayList<>(), new ArrayList<>(), body));
 
             try {
                 writer.close();
@@ -574,7 +579,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             List<CSModifier> modifiers = new ArrayList<>();
             ((NodeSequence) n.f0.choice).nodes.get(1).accept(this, new ModifiersContext(ctx, name, modifiers));
 
-            ctx.getValue().addEvent(new CSParameter(modifiers, type, name));
+            ctx.getValue().addEvent(new CSParameter(ctx.getValue(), modifiers, type, name));
 
             try {
                 writer.close();
@@ -620,7 +625,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 String parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
 
                 operatorDeclarator.f7.accept(dumper); // Second Argument Type
                 dumper.flushWriter();
@@ -632,7 +637,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
             } else if ((n.f2.f0.choice instanceof UnaryOperatorDeclarator)) {
                 UnaryOperatorDeclarator operatorDeclarator = (UnaryOperatorDeclarator) n.f2.f0.choice;
 
@@ -656,7 +661,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 String parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
             } else { // Conversion Operator Declarator
                 ConversionOperatorDeclarator operatorDeclarator = (ConversionOperatorDeclarator) n.f2.f0.choice;
                 NodeSequence nodeSequence = (NodeSequence) operatorDeclarator.f0.choice;
@@ -682,7 +687,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 String parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
             }
 
             n.f1.accept(this, new ModifiersContext(ctx, name, modifiers)); // Parse modifiers
@@ -692,7 +697,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().addOperator(new CSMethod(modifiers, type, name, parameters, new ArrayList<>(), body));
+            ctx.getValue().addOperator(new CSMethod(ctx.getValue(), modifiers, type, name, parameters, new ArrayList<>(), body));
 
             try {
                 writer.close();
@@ -779,7 +784,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().setSecond(new CSMethod(modifiers, ctx.getKey().getFirst(), name, new ArrayList<>(), new ArrayList<>(), body));
+            ctx.getValue().setSecond(new CSMethod((CSClass) ctx.getParent().getValue(), modifiers, ctx.getKey().getFirst(), name, new ArrayList<>(), new ArrayList<>(), body));
         }
         return super.visit(n, argu);
     }
@@ -801,7 +806,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().setFirst(new CSMethod(modifiers, ctx.getKey().getFirst(), name, new ArrayList<>(), new ArrayList<>(), body));
+            ctx.getValue().setFirst(new CSMethod((CSClass) ctx.getParent().getValue(), modifiers, ctx.getKey().getFirst(), name, new ArrayList<>(), new ArrayList<>(), body));
         }
         return super.visit(n, argu);
     }
@@ -929,6 +934,130 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
         }
         return super.visit(n, argu);
     }
+
+    /**
+     * Adds type into class used types
+     */
+    @Override
+    public ParseContext visit(ClassType n, ParseContext argu) {
+        if (argu instanceof ClassContext) {
+            ClassContext ctx = (ClassContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+            n.f0.choice.accept(dumper);
+            dumper.flushWriter();
+
+            // Get class name
+            String className = writer.toString().trim();
+            if (className.split("::").length == 2) {
+                String[] aliasAndName = className.split("::");
+                String aliasQualifier = parseDriver.searchAlias(ctx.getValue().getNamespace(), aliasAndName[0]);
+                if (aliasQualifier == null) {
+                    throw new RuntimeException("Could not find alias " + aliasAndName[0]);
+                }
+                className = aliasQualifier + "." + aliasAndName[1];
+            }
+            String[] qualifiedName = className.split("\\.");
+            Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(ctx.getValue().getNamespace(), qualifiedName);
+            CSNamespace foundNamespace = search.getFirst();
+            String[] namePartsLeft = search.getSecond();
+            if (namePartsLeft.length == 1) {
+                CSClass csClass = parseDriver.searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                ctx.getValue().addUsedClass(csClass);
+            } else {
+                parseDriver.addUnresolvedUsedClass(ctx.getValue(), qualifiedName);
+            }
+
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.visit(n, argu);
+    }
+
+    /**
+     * Adds local variables into method
+     */
+    @Override
+    public ParseContext visit(LocalVariableDeclaration n, ParseContext argu) {
+        if (argu instanceof MethodContext) {
+            MethodContext ctx = (MethodContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+
+            n.f0.accept(dumper);
+            dumper.flushWriter();
+            VariableDeclarationContext variableCtx = new VariableDeclarationContext(ctx, writer.toString().trim(), new ArrayList<>());
+
+            n.f1.accept(this, variableCtx);
+
+            // Get class name
+            String className = variableCtx.getKey();
+            ClassContext currentClassCtx = (ClassContext) ctx.getParent();
+            if (className.split("::").length == 2) {
+                String[] aliasAndName = className.split("::");
+                String aliasQualifier = parseDriver.searchAlias(currentClassCtx.getValue().getNamespace(), aliasAndName[0]);
+                if (aliasQualifier == null) {
+                    throw new RuntimeException("Could not find alias " + aliasAndName[0]);
+                }
+                className = aliasQualifier + "." + aliasAndName[1];
+            }
+
+            String finalClassName = className;
+            variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new ArrayList<>(), finalClassName, name)));
+
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.visit(n, argu);
+    }
+
+    /**
+     * Adds local constants into method
+     */
+    @Override
+    public ParseContext visit(LocalConstantDeclaration n, ParseContext argu) {
+        if (argu instanceof MethodContext) {
+            MethodContext ctx = (MethodContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+
+            n.f1.accept(dumper);
+            dumper.flushWriter();
+            VariableDeclarationContext variableCtx = new VariableDeclarationContext(ctx, writer.toString().trim(), new ArrayList<>());
+
+            n.f2.accept(this, variableCtx);
+
+            // Get class name
+            String className = variableCtx.getKey();
+            ClassContext currentClassCtx = (ClassContext) ctx.getParent();
+            if (className.split("::").length == 2) {
+                String[] aliasAndName = className.split("::");
+                String aliasQualifier = parseDriver.searchAlias(currentClassCtx.getValue().getNamespace(), aliasAndName[0]);
+                if (aliasQualifier == null) {
+                    throw new RuntimeException("Could not find alias " + aliasAndName[0]);
+                }
+                className = aliasQualifier + "." + aliasAndName[1];
+            }
+
+            String finalClassName = className;
+            variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new ArrayList<>(), finalClassName, name)));
+
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.visit(n, argu);
+    }
+
+
 
     private void parseAccessorModifiers(NodeOptional node, List<CSModifier> modifiers) {
         if (node.present()) {
