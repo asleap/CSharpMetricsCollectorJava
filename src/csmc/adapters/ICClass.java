@@ -30,5 +30,7 @@ public interface ICClass {
 
     void setClassMethods(Map<String, String> classMethods);
 
+    void setClassMethods(List<IMethod> classMethods);
+
     void setParentClassName(String parentClassName);
 }

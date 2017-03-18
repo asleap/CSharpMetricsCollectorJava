@@ -3,7 +3,9 @@ package csmc.javacc.parse;
 import csmc.javacc.generated.CSharpParser;
 import csmc.javacc.generated.ParseException;
 import csmc.javacc.generated.syntaxtree.Input;
+import csmc.javacc.parse.util.Tuple3;
 import csmc.lang.CSClass;
+import csmc.lang.CSMethod;
 import csmc.lang.CSNamespace;
 import csmc.javacc.parse.context.NamespaceContext;
 import csmc.javacc.parse.util.Tuple2;
@@ -22,11 +24,14 @@ public class ParseDriver {
     private CSNamespace global;
     private List<Tuple2<CSClass, String[]>> unresolvedParents; // Child class, fully-qualified name of base class
     private List<Tuple2<CSClass, String[]>> unresolvedUsedClasses; // Using class, fully-qualified names of used class
+    private List<Tuple3<CSMethod, String[], String[]>> unresolvedUsedMethods; // Using method, fully-qualified type name, invoked methods names
 
     public ParseDriver() {
         // Create 'global' namespace
         this.global = new CSNamespace("global", null);
         unresolvedParents = new ArrayList<>();
+        unresolvedUsedClasses = new ArrayList<>();
+        unresolvedUsedMethods = new ArrayList<>();
     }
 
     /**
@@ -122,13 +127,20 @@ public class ParseDriver {
     }
 
     /**
+     * Add unresolved used method invocation chain, type it is called on and using method
+     */
+    public void addUnresolvedUsedMethod(CSMethod method, String[] typeName, String[] invocationChain) {
+        unresolvedUsedMethods.add(new Tuple3<>(method, typeName, invocationChain));
+    }
+
+    /**
      * Post parse processing
      */
     private void postParse() {
         int oldSize;
         do {
             oldSize = unresolvedParents.size();
-            for (Iterator<Tuple2<CSClass, String[]>> it = unresolvedParents.iterator(); it.hasNext();) {
+            for (Iterator<Tuple2<CSClass, String[]>> it = unresolvedParents.iterator(); it.hasNext(); ) {
                 Tuple2<CSClass, String[]> current = it.next();
                 CSClass child = current.getFirst();
                 String[] parentName = current.getSecond();
@@ -188,5 +200,9 @@ public class ParseDriver {
 
         parseTree.accept((ParseVisitor) new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
         postParse();
+    }
+
+    public CSNamespace getGlobalNamespace() {
+        return global;
     }
 }

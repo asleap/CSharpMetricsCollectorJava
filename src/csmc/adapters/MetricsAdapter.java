@@ -2,19 +2,21 @@ package csmc.adapters;
 
 import csmc.lang.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MetricsAdapter {
+public class MetricsAdapter<IA extends IAttribute, IM extends IMethod, IC extends ICClass> {
     private CSNamespace global;
-    private Class<IAttribute> attributeImplementation;
-    private Class<IMethod> methodImplementation;
-    private Class<ICClass> classImplementation;
+    private Class<IA> attributeImplementation;
+    private Class<IM> methodImplementation;
+    private Class<IC> classImplementation;
 
-    public MetricsAdapter(CSNamespace global, Class<IAttribute> attributeImplementation, Class<IMethod> methodImplementation, Class<ICClass> classImplementation) {
+    public MetricsAdapter(CSNamespace global, Class<IA> attributeImplementation, Class<IM> methodImplementation, Class<IC> classImplementation) {
         this.global = global;
         this.attributeImplementation = attributeImplementation;
         this.methodImplementation = methodImplementation;
@@ -24,8 +26,8 @@ public class MetricsAdapter {
     /**
      * Visits CSClass instance and returns its ICClass representation
      */
-    private ICClass visitClass(CSClass csClass) {
-        ICClass icClass = null;
+    private IC visitClass(CSClass csClass) {
+        IC icClass = null;
         try {
             icClass = classImplementation.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
@@ -60,18 +62,18 @@ public class MetricsAdapter {
 
         icClass.setClassAttributes(
                 csClass.getFields().stream()
-                .map(csParameterToIAttribute)
-                .collect(Collectors.toList()));
+                        .map(csParameterToIAttribute)
+                        .collect(Collectors.toList()));
 
         icClass.getClassAttributes().addAll(
                 csClass.getConstants().stream()
-                .map(csParameterToIAttribute)
-                .collect(Collectors.toList()));
+                        .map(csParameterToIAttribute)
+                        .collect(Collectors.toList()));
 
         icClass.getClassAttributes().addAll(
                 csClass.getEvents().stream()
-                .map(csParameterToIAttribute)
-                .collect(Collectors.toList()));
+                        .map(csParameterToIAttribute)
+                        .collect(Collectors.toList()));
 
         // Collect methods and their sources
         Map<String, String> methodsAndSources = new HashMap<>();
@@ -81,6 +83,33 @@ public class MetricsAdapter {
         csClass.getStaticConstructors().forEach(sc -> methodsAndSources.put(sc.getName(), sc.getBody()));
         csClass.getDestructors().forEach(d -> methodsAndSources.put(d.getName(), d.getBody()));
 
+        List<IMethod> methodList = new ArrayList<>();
+        Function<CSMethod, IMethod> csMethodToIMethod = csMethod -> {
+            IMethod method = null;
+            try {
+                method = methodImplementation.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            method.setName(csMethod.getName());
+            method.setAccessSpec(csMethod.getModifiers().contains(CSModifier.PUBLIC) ? "public" : "private");
+            method.setClassName(csMethod.getCsClass().toString());
+            method.setMethodsUsed(csMethod.getInvokedMethods().stream().map(CSClassEntity::getName).collect(Collectors.toList()));
+            method.setSource(csMethod.getBody());
+
+            List<String> fields = new ArrayList<>();
+            csMethod.getFormalParameters().forEach(param -> fields.add(param.getName()));
+            csMethod.getLocalVariables().forEach(var -> fields.add(var.getName()));
+            method.setFields(fields);
+            method.setGlobalFields(fields);
+            return method;
+        };
+        methodList.addAll(csClass.getMethods().stream().map(csMethodToIMethod).collect(Collectors.toList()));
+        methodList.addAll(csClass.getConstructors().stream().map(csMethodToIMethod).collect(Collectors.toList()));
+        methodList.addAll(csClass.getOperators().stream().map(csMethodToIMethod).collect(Collectors.toList()));
+        methodList.addAll(csClass.getStaticConstructors().stream().map(csMethodToIMethod).collect(Collectors.toList()));
+        methodList.addAll(csClass.getDestructors().stream().map(csMethodToIMethod).collect(Collectors.toList()));
+
         Consumer<CSProperty> addPropertyToMap = p -> {
             if (p.getGetter() != null) {
                 methodsAndSources.put(p.getGetter().getName(), p.getGetter().getBody());
@@ -89,9 +118,18 @@ public class MetricsAdapter {
                 methodsAndSources.put(p.getSetter().getName(), p.getSetter().getBody());
             }
         };
+        Consumer<CSProperty> addPropertyToList = p -> {
+            if (p.getGetter() != null) {
+                methodList.add(csMethodToIMethod.apply(p.getGetter()));
+            }
+            if (p.getSetter() != null) {
+                methodList.add(csMethodToIMethod.apply(p.getSetter()));
+            }
+        };
         csClass.getProperties().forEach(addPropertyToMap);
         csClass.getIndexers().forEach(addPropertyToMap);
         icClass.setClassMethods(methodsAndSources);
+        icClass.setClassMethods(methodList);
 
         return icClass;
     }
@@ -99,7 +137,7 @@ public class MetricsAdapter {
     /**
      * Recursively traverses namespace and its classes
      */
-    private void traverseNamespaceTree(CSNamespace namespace, Map<String, ICClass> classes) {
+    private void traverseNamespaceTree(CSNamespace namespace, Map<String, IC> classes) {
         namespace.getClasses().stream().map(this::visitClass).forEach(c -> classes.put(c.getClassName(), c));
         namespace.getNamespaces().forEach(n -> traverseNamespaceTree(n, classes));
     }
@@ -107,8 +145,8 @@ public class MetricsAdapter {
     /**
      * Returns map of fully-qualified class names and corresponding ICClass instances
      */
-    public Map<String, ICClass> getAllClasses() {
-        Map<String, ICClass> classes = new HashMap<>();
+    public Map<String, IC> getAllClasses() {
+        Map<String, IC> classes = new HashMap<>();
         traverseNamespaceTree(global, classes);
         return classes;
     }
