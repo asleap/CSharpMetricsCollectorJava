@@ -261,7 +261,7 @@ public class ParseDriver {
                 String varType = String.join(".", current.getSecond());
                 String[] callChain = current.getThird();
 
-                int i = 0;
+                int i;
                 for (i = 0; i < callChain.length; i++) {
                     String[] qualifiedName = resolveNamespaceOrTypeName(varType, usingMethod.getCsClass());
                     Tuple2<CSNamespace, String[]> search = searchClosestNamespace(usingMethod.getCsClass().getNamespace(), qualifiedName);
@@ -297,12 +297,8 @@ public class ParseDriver {
     }
 
     public void parse(InputStream stream) {
-        CSharpParser parser = null;
-        try {
-            parser = new CSharpParser(new JavaCharStream(stream, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        CSharpParser parser;
+        parser = new CSharpParser(stream, "UTF-8");
 
         Input parseTree = null;
         try {
@@ -311,7 +307,7 @@ public class ParseDriver {
             e.printStackTrace();
         }
 
-        parseTree.accept((ParseVisitor) new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
+        parseTree.accept(new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
         postParse();
     }
 
@@ -335,7 +331,7 @@ public class ParseDriver {
             }
             CSharpParser parser = null;
             try {
-                parser = new CSharpParser(new JavaCharStream(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))));
+                parser = new CSharpParser(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")));
             } catch (FileNotFoundException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -347,7 +343,7 @@ public class ParseDriver {
                 e.printStackTrace();
             }
 
-            parseTree.accept((ParseVisitor) new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
+            parseTree.accept(new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
         }
     }
 
