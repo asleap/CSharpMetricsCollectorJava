@@ -12,10 +12,7 @@ import csmc.javacc.parse.util.Tuple2;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * ParseDriver class that build intermediate representation for further metrics calculation
@@ -112,6 +109,34 @@ public class ParseDriver {
         return current.getAliases().containsKey(aliasName) ? current.getAliases().get(aliasName) : current.getParent() == null ? null : searchAlias(current.getParent(), aliasName);
     }
 
+
+    /**
+     * Splits fully qualified-name into parts, resolves alias if present
+     */
+    public String[] resolveNamespaceOrTypeName(String className, CSClass csClass) {
+        if (className.split("::").length == 2) {
+            String[] aliasAndName = className.split("::");
+            String aliasQualifier = searchAlias(csClass.getNamespace(), aliasAndName[0]);
+            if (aliasQualifier == null) {
+                throw new RuntimeException("Could not find alias " + aliasAndName[0]);
+            }
+            className = aliasQualifier + "." + aliasAndName[1];
+        }
+        String[] partiallyQualifiedName = className.split("\\.");
+        String[] contextNamespaceName = csClass.getNamespace().toString().split("\\.");
+        int i;
+        for (i = contextNamespaceName.length - 1; i >= 0; i--) {
+            if (contextNamespaceName[i].equals(partiallyQualifiedName[0]))
+                break;
+        }
+        if (i >= 0)
+            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, i);
+        List<String> fullyQualifiedName = new ArrayList<>();
+        fullyQualifiedName.addAll(Arrays.asList(contextNamespaceName));
+        fullyQualifiedName.addAll(Arrays.asList(partiallyQualifiedName));
+        return fullyQualifiedName.toArray(contextNamespaceName);
+    }
+
     /**
      * Add unresolved parent and related class for post parse processing
      */
@@ -155,7 +180,7 @@ public class ParseDriver {
             }
         } while (unresolvedParents.size() < oldSize);
         for (Tuple2<CSClass, String[]> tuple : unresolvedParents) {
-            System.out.println("Could not find base class "
+            System.err.println("Could not find base class "
                     + String.join(".", tuple.getSecond())
                     + " for child class " + tuple.getFirst().toString());
         }
@@ -177,9 +202,48 @@ public class ParseDriver {
             }
         } while (unresolvedUsedClasses.size() < oldSize);
         for (Tuple2<CSClass, String[]> tuple : unresolvedUsedClasses) {
-            System.out.println("Could not find used class "
+            System.err.println("Could not find used class "
                     + String.join(".", tuple.getSecond())
                     + " for using class " + tuple.getFirst().toString());
+        }
+
+        do {
+            oldSize = unresolvedUsedMethods.size();
+            for (Iterator<Tuple3<CSMethod, String[], String[]>> it = unresolvedUsedMethods.iterator(); it.hasNext(); ) {
+                Tuple3<CSMethod, String[], String[]> current = it.next();
+                CSMethod usingMethod  = current.getFirst();
+                String varType = String.join(".", current.getSecond());
+                String[] callChain = current.getThird();
+
+                int i = 0;
+                for (i = 0; i < callChain.length; i++) {
+                    String[] qualifiedName = resolveNamespaceOrTypeName(varType, usingMethod.getCsClass());
+                    Tuple2<CSNamespace, String[]> search = searchClosestNamespace(usingMethod.getCsClass().getNamespace(), qualifiedName);
+                    CSNamespace foundNamespace = search.getFirst();
+                    String[] namePartsLeft = search.getSecond();
+                    if (namePartsLeft.length == 1) {
+                        CSClass csClass = searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                        int finalI = i;
+                        Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(callChain[finalI])).findFirst();
+                        if (optionalMethod.isPresent()) {
+                            CSMethod method = optionalMethod.get();
+                            usingMethod.addInvokedMethod(method);
+                            varType = method.getType();
+                        } else {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                if (i == callChain.length)
+                    it.remove();
+            }
+        } while (unresolvedUsedMethods.size() < oldSize);
+        for (Tuple3<CSMethod, String[], String[]> tuple : unresolvedUsedMethods) {
+            System.err.println("Could not find methods used in invocation chain \""
+                    + String.join(".", tuple.getThird())
+                    + "\" from method " + tuple.getFirst().getCsClass().toString() + "." + tuple.getFirst().getName());
         }
     }
 

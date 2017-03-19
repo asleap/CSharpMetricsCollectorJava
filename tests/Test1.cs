@@ -84,13 +84,12 @@ namespace AbstractMath {
         }
     }
     public class MathClass {
-        public MyString a() {
-            return new MyString();
+        public void b() {
+            int x = a().length();
         }
 
-        public void b() {
-            MyString a = new MyString();
-            int x = a.length();
+        public MyString a() {
+            return new MyString();
         }
     }
 }

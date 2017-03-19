@@ -169,7 +169,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
         if (inherited.length >= 1 && ((!inherited[0].startsWith("I") && !inherited[0].isEmpty())
                 || (inherited[0].startsWith("I") && inherited[0].length() >= 2 && Character.isLowerCase(inherited[0].charAt(1))))) {
             String baseClassName = inherited[0];
-            String[] qualifiedName = resolveNamespaceOrTypeName(baseClassName, ctx);
+            String[] qualifiedName = parseDriver.resolveNamespaceOrTypeName(baseClassName, ctx.getValue());
             Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(ctx.getValue().getNamespace(), qualifiedName);
             CSNamespace foundNamespace = search.getFirst();
             String[] namePartsLeft = search.getSecond();
@@ -944,7 +944,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             // Get class name
             String className = writer.toString().trim();
-            String[] qualifiedName = resolveNamespaceOrTypeName(className, ctx);
+            String[] qualifiedName = parseDriver.resolveNamespaceOrTypeName(className, ctx.getValue());
             Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(ctx.getValue().getNamespace(), qualifiedName);
             CSNamespace foundNamespace = search.getFirst();
             String[] namePartsLeft = search.getSecond();
@@ -982,7 +982,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             // Get class name
             ClassContext currentClassCtx = (ClassContext) ctx.getParent();
-            String className = String.join(".", resolveNamespaceOrTypeName(variableCtx.getKey(), currentClassCtx));
+            String className = String.join(".", parseDriver.resolveNamespaceOrTypeName(variableCtx.getKey(), currentClassCtx.getValue()));
 
             variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new ArrayList<>(), className, name)));
 
@@ -1013,7 +1013,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             // Get class name
             ClassContext currentClassCtx = (ClassContext) ctx.getParent();
-            String className = String.join(".", resolveNamespaceOrTypeName(variableCtx.getKey(), currentClassCtx));
+            String className = String.join(".", parseDriver.resolveNamespaceOrTypeName(variableCtx.getKey(), currentClassCtx.getValue()));
 
             variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new ArrayList<>(), className, name)));
 
@@ -1066,7 +1066,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 callChain = Arrays.stream(callChain).filter(s -> s.contains("(") && s.contains(")")).map(call -> call.substring(0, call.indexOf("("))).toArray(String[]::new);
 
                 for (int i = 0; i < callChain.length; i++) {
-                    String[] qualifiedName = resolveNamespaceOrTypeName(varType, classCtx);
+                    String[] qualifiedName = parseDriver.resolveNamespaceOrTypeName(varType, classCtx.getValue());
                     Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(classCtx.getValue().getNamespace(), qualifiedName);
                     CSNamespace foundNamespace = search.getFirst();
                     String[] namePartsLeft = search.getSecond();
@@ -1118,33 +1118,6 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             }
         }
         return null;
-    }
-
-    /**
-     * Splits fully qualified-name into parts, resolves alias if present
-     */
-    private String[] resolveNamespaceOrTypeName(String className, ClassContext ctx) {
-        if (className.split("::").length == 2) {
-            String[] aliasAndName = className.split("::");
-            String aliasQualifier = parseDriver.searchAlias(ctx.getValue().getNamespace(), aliasAndName[0]);
-            if (aliasQualifier == null) {
-                throw new RuntimeException("Could not find alias " + aliasAndName[0]);
-            }
-            className = aliasQualifier + "." + aliasAndName[1];
-        }
-        String[] partiallyQualifiedName = className.split("\\.");
-        String[] contextNamespaceName = ctx.getValue().getNamespace().toString().split("\\.");
-        int i;
-        for (i = contextNamespaceName.length - 1; i >= 0; i--) {
-            if (contextNamespaceName[i].equals(partiallyQualifiedName[0]))
-                break;
-        }
-        if (i >= 0)
-            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, i);
-        List<String> fullyQualifiedName = new ArrayList<>();
-        fullyQualifiedName.addAll(Arrays.asList(contextNamespaceName));
-        fullyQualifiedName.addAll(Arrays.asList(partiallyQualifiedName));
-        return fullyQualifiedName.toArray(contextNamespaceName);
     }
 
     private void parseAccessorModifiers(NodeOptional node, List<CSModifier> modifiers) {
