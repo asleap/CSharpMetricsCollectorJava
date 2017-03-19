@@ -150,6 +150,10 @@ public class ParseDriver {
             }
             className = aliasQualifier + "." + aliasAndName[1];
         }
+        String resolvedAliasName = searchAlias(csClass.getNamespace(), className);
+        if (resolvedAliasName != null) {
+            className = resolvedAliasName;
+        }
         String[] partiallyQualifiedName = className.split("\\.");
         String[] contextNamespaceName = csClass.getNamespace().toString().split("\\.");
         int i;
