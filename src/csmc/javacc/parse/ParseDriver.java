@@ -1,6 +1,7 @@
 package csmc.javacc.parse;
 
 import csmc.javacc.generated.CSharpParser;
+import csmc.javacc.generated.JavaCharStream;
 import csmc.javacc.generated.ParseException;
 import csmc.javacc.generated.syntaxtree.Input;
 import csmc.javacc.parse.util.Tuple3;
@@ -10,8 +11,7 @@ import csmc.lang.CSNamespace;
 import csmc.javacc.parse.context.NamespaceContext;
 import csmc.javacc.parse.util.Tuple2;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -43,6 +43,9 @@ public class ParseDriver {
         Tuple2<CSNamespace, String[]> search = null;
         for (CSNamespace namespace : current.getNamespaces()) {
             if (namespace.getName().equals(qualifiedName[0])) {
+                if (qualifiedName.length == 1) {
+                    return new Tuple2<>(namespace, Arrays.copyOfRange(qualifiedName, 1, qualifiedName.length));
+                }
                 search = searchClosestNamespaceRec(namespace, Arrays.copyOfRange(qualifiedName, 1, qualifiedName.length), true);
                 if (search == null) {
                     search = new Tuple2<>(namespace, Arrays.copyOfRange(qualifiedName, 1, qualifiedName.length));
@@ -103,12 +106,37 @@ public class ParseDriver {
     }
 
     /**
+     * Searches class in given namespace.
+     */
+    public CSClass searchClass(CSNamespace namespace, String className) {
+        for (CSClass csClass : namespace.getClasses()) {
+            if (csClass.getName().equals(className)) {
+                return csClass;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Searches class in given namespace.
+     */
+    public CSClass searchClassInTree(CSNamespace namespace, String className) {
+        for (CSClass csClass : namespace.getClasses()) {
+            if (csClass.getName().equals(className)) {
+                return csClass;
+            }
+        }
+        if (namespace.getParent() != null)
+            return searchClassInTree(namespace.getParent(), className);
+        return null;
+    }
+
+    /**
      * Searches closest defined alias and returns fully qualified name.
      */
     public String searchAlias(CSNamespace current, String aliasName) {
         return current.getAliases().containsKey(aliasName) ? current.getAliases().get(aliasName) : current.getParent() == null ? null : searchAlias(current.getParent(), aliasName);
     }
-
 
     /**
      * Splits fully qualified-name into parts, resolves alias if present
@@ -131,9 +159,13 @@ public class ParseDriver {
         }
         if (i >= 0)
             contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, i);
+        else
+            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, 0);
         List<String> fullyQualifiedName = new ArrayList<>();
         fullyQualifiedName.addAll(Arrays.asList(contextNamespaceName));
         fullyQualifiedName.addAll(Arrays.asList(partiallyQualifiedName));
+        if (fullyQualifiedName.get(0).equals("global"))
+            fullyQualifiedName.remove(0);
         return fullyQualifiedName.toArray(contextNamespaceName);
     }
 
@@ -191,13 +223,23 @@ public class ParseDriver {
                 Tuple2<CSClass, String[]> current = it.next();
                 CSClass usingClass = current.getFirst();
                 String[] usedClassName = current.getSecond();
-                Tuple2<CSNamespace, String[]> search = searchClosestNamespace(usingClass.getNamespace(), usedClassName);
-                CSNamespace foundNamespace = search.getFirst();
-                String[] namePartsLeft = search.getSecond();
-                if (namePartsLeft.length == 1) {
-                    CSClass usedClass = searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                CSClass usedClass = null;
+                if (usedClassName.length == 1)
+                    usedClass = searchClassInTree(usingClass.getNamespace(), usedClassName[0]);
+                if (usedClass != null) {
                     usingClass.addUsedClass(usedClass);
                     it.remove();
+                } else {
+                    Tuple2<CSNamespace, String[]> search = searchClosestNamespace(usingClass.getNamespace(), usedClassName);
+                    CSNamespace foundNamespace = search.getFirst();
+                    String[] namePartsLeft = search.getSecond();
+                    if (namePartsLeft.length == 1) {
+                        usedClass = searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                        if (usedClass != null) {
+                            usingClass.addUsedClass(usedClass);
+                            it.remove();
+                        }
+                    }
                 }
             }
         } while (unresolvedUsedClasses.size() < oldSize);
@@ -211,7 +253,7 @@ public class ParseDriver {
             oldSize = unresolvedUsedMethods.size();
             for (Iterator<Tuple3<CSMethod, String[], String[]>> it = unresolvedUsedMethods.iterator(); it.hasNext(); ) {
                 Tuple3<CSMethod, String[], String[]> current = it.next();
-                CSMethod usingMethod  = current.getFirst();
+                CSMethod usingMethod = current.getFirst();
                 String varType = String.join(".", current.getSecond());
                 String[] callChain = current.getThird();
 
@@ -222,7 +264,10 @@ public class ParseDriver {
                     CSNamespace foundNamespace = search.getFirst();
                     String[] namePartsLeft = search.getSecond();
                     if (namePartsLeft.length == 1) {
-                        CSClass csClass = searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                        CSClass csClass = searchClass(foundNamespace, namePartsLeft[0]);
+                        if (csClass == null) {
+                            break;
+                        }
                         int finalI = i;
                         Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(callChain[finalI])).findFirst();
                         if (optionalMethod.isPresent()) {
@@ -247,11 +292,11 @@ public class ParseDriver {
         }
     }
 
-    public void parse(String fileName) {
+    public void parse(InputStream stream) {
         CSharpParser parser = null;
         try {
-            parser = new CSharpParser(new FileInputStream(fileName));
-        } catch (FileNotFoundException e) {
+            parser = new CSharpParser(new JavaCharStream(stream, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
@@ -264,6 +309,42 @@ public class ParseDriver {
 
         parseTree.accept((ParseVisitor) new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
         postParse();
+    }
+
+    public void parse(String dirName) {
+        parseFile(new File(dirName));
+        postParse();
+    }
+
+    private void parseFile(File file) {
+        if (file.isDirectory()) {
+            File[] subFiles = file.listFiles(f -> f.getName().endsWith(".cs") || f.isDirectory());
+            if (subFiles != null) {
+                Arrays.sort(subFiles, (file1, file2) -> file1.isDirectory() ? -1 : +1);
+                Arrays.stream(subFiles).forEach(this::parseFile);
+            }
+        } else {
+            try {
+                System.out.println("Parsing file " + file.getCanonicalPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            CSharpParser parser = null;
+            try {
+                parser = new CSharpParser(new JavaCharStream(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))));
+            } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            Input parseTree = null;
+            try {
+                parseTree = parser.Input();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            parseTree.accept((ParseVisitor) new ParseVisitor(this), new NamespaceContext(null, global.getName(), global));
+        }
     }
 
     public CSNamespace getGlobalNamespace() {

@@ -6,48 +6,36 @@ public class CSNamespace {
     private String name;
     private CSNamespace parent;
 
-    private List<String> imports;
-    private List<String> staticImports;
+    private Set<String> imports;
+    private Set<String> staticImports;
     private Map<String, String> aliases;
 
-    private List<CSNamespace> namespaces;
-    private List<CSClass> classes;
+    private Set<CSNamespace> namespaces;
+    private Set<CSClass> classes;
 
     public CSNamespace(String name, CSNamespace parent) {
         this.name = name;
         this.parent = parent;
-        this.imports = new ArrayList<>();
-        this.staticImports = new ArrayList<>();
+        this.imports = new HashSet<>();
+        this.staticImports = new HashSet<>();
         this.aliases = new HashMap<>();
-        this.namespaces = new ArrayList<>();
-        this.classes = new ArrayList<>();
+        this.namespaces = new HashSet<>();
+        this.classes = new HashSet<>();
     }
 
-    public List<String> getImports() {
+    public Set<String> getImports() {
         return imports;
     }
 
-    public List<String> getStaticImports() {
+    public Set<String> getStaticImports() {
         return staticImports;
     }
 
     public void addStaticImport(String importName) {
-        if (this.staticImports.contains(importName)) {
-            throw new IllegalArgumentException("Namespace "
-                    + this.toString()
-                    + "already contains static import "
-                    + importName);
-        }
         this.staticImports.add(importName);
     }
 
     public void addImport(String importName) {
-        if (this.imports.contains(importName)) {
-            throw new IllegalArgumentException("Namespace "
-                    + this.toString()
-                    + "already contains import "
-                    + importName);
-        }
         this.imports.add(importName);
     }
 
@@ -77,40 +65,38 @@ public class CSNamespace {
         return parent;
     }
 
-    public List<CSNamespace> getNamespaces() {
+    public Set<CSNamespace> getNamespaces() {
         return namespaces;
     }
 
-    public List<CSClass> getClasses() {
+    public Set<CSClass> getClasses() {
         return classes;
     }
 
     public void addNamespace(CSNamespace namespace) {
-        if (!namespaces.contains(namespace)) {
-            if (namespace.getParent() != this) {
-                throw new IllegalArgumentException(
-                        "Trying to add namespace " +
-                        namespace.getName() +
-                        " that already has parent namespace");
-            }
-            namespaces.add(namespace);
-        }
+        namespaces.add(namespace);
     }
 
     public void addClass(CSClass csClass) {
-        if (!classes.contains(csClass)) {
-            if (csClass.getNamespace() != this) {
-                throw new IllegalArgumentException(
-                        "Trying to add class " +
-                        csClass.getName() +
-                        " that already defined in other namespace");
-            }
-            classes.add(csClass);
-        }
+        classes.add(csClass);
     }
 
     @Override
     public String toString() {
         return parent == null || parent.getName().equals("global") ? name : parent.toString() + "." + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CSNamespace that = (CSNamespace) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(parent, that.parent);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, parent);
     }
 }

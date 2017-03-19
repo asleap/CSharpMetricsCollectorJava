@@ -9,10 +9,7 @@ import csmc.lang.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -182,11 +179,11 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
         }
 
         // Parse modifiers
-        List<CSModifier> modifiers = new ArrayList<>();
+        Set<CSModifier> modifiers = new HashSet<>();
         n.f1.accept(this, new ModifiersContext(ctx, ctx.getKey(), modifiers));
         modifiers.forEach(csModifier -> ctx.getValue().addModifier(csModifier));
 
-        List<String> typeParameters = new ArrayList<>(); // Type parameters
+        Set<String> typeParameters = new HashSet<>(); // Type parameters
         TypeArgumentContext typeArgumentContext = new TypeArgumentContext(argu, ctx.getKey(), typeParameters);
         n.f5.accept(this, typeArgumentContext);
         typeParameters.forEach(typeParameter -> ctx.getValue().addTypeParameter(typeParameter));
@@ -221,7 +218,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             writer.getBuffer().setLength(0);
 
             // Constant modifiers
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             n.f1.accept(this, new ModifiersContext(ctx, constantName, modifiers));
 
             ctx.getValue().addConstant(new CSParameter(ctx.getValue(), modifiers, type, constantName));
@@ -269,7 +266,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             writer.getBuffer().setLength(0);
 
             // Field modifiers
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             n.f1.accept(this, new ModifiersContext(ctx, fieldName, modifiers));
 
             ctx.getValue().addField(new CSParameter(ctx.getValue(), modifiers, type, fieldName));
@@ -314,12 +311,12 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             n.f0.f4.accept(this, identifierContext);
             String name = identifierContext.getValue().toString();
 
-            List<String> typeParameters = new ArrayList<>(); // Type parameters
+            Set<String> typeParameters = new HashSet<>(); // Type parameters
             TypeArgumentContext typeArgumentContext = new TypeArgumentContext(argu, ctx.getKey(), typeParameters);
             n.f0.f5.accept(this, typeArgumentContext);
             n.f0.f4.accept(this, typeArgumentContext);
 
-            List<CSParameter> formalParameters = new ArrayList<>(); // Formal parameters
+            Set<CSParameter> formalParameters = new HashSet<>(); // Formal parameters
             FormalParameterContext formalParameterContext = new FormalParameterContext(argu, name, formalParameters);
             n.f0.f7.accept(this, formalParameterContext);
 
@@ -328,7 +325,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String methodBody = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            List<CSModifier> modifiers = new ArrayList<>(); // Method modifiers
+            Set<CSModifier> modifiers = new HashSet<>(); // Method modifiers
             n.f0.f1.accept(this, new ModifiersContext(ctx, name, modifiers));
 
             CSMethod method = new CSMethod(ctx.getValue(), modifiers, type, name, formalParameters, typeParameters, methodBody);
@@ -412,7 +409,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String name = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            List<CSModifier> modifiers = new ArrayList<>(); // Modifiers
+            Set<CSModifier> modifiers = new HashSet<>(); // Modifiers
             n.f1.accept(this, new ModifiersContext(ctx, name, modifiers));
 
             ctx.getValue().add(new CSParameter((CSClass) ctx.getParent().getValue(), modifiers, type, name));
@@ -433,10 +430,25 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             if (((IdentifierContext) argu).getValue().length() > 0)
                 ((IdentifierContext) argu).getValue().append(".");
             ((IdentifierContext) argu).getValue().append(n.f0.toString());
-        } else if (argu instanceof VariableDeclarationContext) {
-            // Adds variable name into VariableDeclarationContext, which later will be parsed into variable list
-            VariableDeclarationContext ctx = (VariableDeclarationContext) argu;
-            ctx.getValue().add(n.f0.toString());
+        } else if (argu instanceof MethodContext){
+            MethodContext ctx = (MethodContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+
+            n.accept(dumper);
+            String name = writer.toString().trim();
+            if (ctx.getValue().getLocalVariables().stream().noneMatch(var -> var.getName().equals(name))) {
+                Optional<CSParameter> variable = Stream.of(ctx.getValue().getCsClass().getFields(), ctx.getValue().getCsClass().getConstants(), ctx.getValue().getCsClass().getEvents())
+                        .flatMap(Collection::stream)
+                        .filter(var -> var.getName().equals(name)).findFirst();
+                variable.ifPresent(csParameter -> ctx.getValue().addLocalVariable(csParameter));
+            }
+
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return super.visit(n, argu);
     }
@@ -448,10 +460,10 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             TreeDumper dumper = new TreeDumper(writer);
             ClassContext ctx = (ClassContext) argu;
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             n.f1.accept(this, new ModifiersContext(ctx, ctx.getKey(), modifiers));
 
-            List<CSParameter> formalParameters = new ArrayList<>(); // Formal parameters
+            Set<CSParameter> formalParameters = new HashSet<>(); // Formal parameters
             FormalParameterContext formalParameterContext = new FormalParameterContext(argu, ctx.getKey(), formalParameters);
             n.f2.f2.accept(this, formalParameterContext);
 
@@ -466,7 +478,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String constructorInitializer = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().addConstructor(new CSConstructor(ctx.getValue(), modifiers, ctx.getKey(), ctx.getKey(), formalParameters, new ArrayList<>(), body, constructorInitializer));
+            ctx.getValue().addConstructor(new CSConstructor(ctx.getValue(), modifiers, ctx.getKey(), ctx.getKey(), formalParameters, new HashSet<>(), body, constructorInitializer));
 
             try {
                 writer.close();
@@ -484,7 +496,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             TreeDumper dumper = new TreeDumper(writer);
             ClassContext ctx = (ClassContext) argu;
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             StaticConstructorModifiers modifierListNode = n.f1;
             for (Node node : modifierListNode.f0.nodes) {
                 node.accept(dumper);
@@ -505,7 +517,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().addStaticConstructor(new CSConstructor(ctx.getValue(), modifiers, ctx.getKey(), ctx.getKey(), new ArrayList<>(), new ArrayList<>(), body, ""));
+            ctx.getValue().addStaticConstructor(new CSConstructor(ctx.getValue(), modifiers, ctx.getKey(), ctx.getKey(), new HashSet<>(), new HashSet<>(), body, ""));
 
             try {
                 writer.close();
@@ -523,7 +535,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             TreeDumper dumper = new TreeDumper(writer);
             ClassContext ctx = (ClassContext) argu;
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             String body;
             if (n.f0.choice instanceof NodeSequence) {
                 NodeSequence sequence = (NodeSequence) n.f0.choice;
@@ -544,7 +556,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 body = writer.toString().trim();
                 writer.getBuffer().setLength(0);
             }
-            ctx.getValue().addDestructor(new CSMethod(ctx.getValue(), modifiers, ctx.getKey(), "~" + ctx.getKey(), new ArrayList<>(), new ArrayList<>(), body));
+            ctx.getValue().addDestructor(new CSMethod(ctx.getValue(), modifiers, ctx.getKey(), "~" + ctx.getKey(), new HashSet<>(), new HashSet<>(), body));
 
             try {
                 writer.close();
@@ -571,7 +583,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             ((NodeSequence) n.f0.choice).nodes.get(4).accept(this, identifierContext); // Name
             String name = identifierContext.getValue().toString();
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             ((NodeSequence) n.f0.choice).nodes.get(1).accept(this, new ModifiersContext(ctx, name, modifiers));
 
             ctx.getValue().addEvent(new CSParameter(ctx.getValue(), modifiers, type, name));
@@ -594,8 +606,8 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             String type;
             String name;
-            List<CSParameter> parameters = new ArrayList<>();
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSParameter> parameters = new HashSet<>();
+            Set<CSModifier> modifiers = new HashSet<>();
 
             if (n.f2.f0.choice instanceof BinaryOperatorDeclarator) {
                 BinaryOperatorDeclarator operatorDeclarator = (BinaryOperatorDeclarator) n.f2.f0.choice;
@@ -620,7 +632,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 String parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new HashSet<>(), parameterType, parameterName));
 
                 operatorDeclarator.f7.accept(dumper); // Second Argument Type
                 dumper.flushWriter();
@@ -632,7 +644,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new HashSet<>(), parameterType, parameterName));
             } else if ((n.f2.f0.choice instanceof UnaryOperatorDeclarator)) {
                 UnaryOperatorDeclarator operatorDeclarator = (UnaryOperatorDeclarator) n.f2.f0.choice;
 
@@ -656,7 +668,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 String parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new HashSet<>(), parameterType, parameterName));
             } else { // Conversion Operator Declarator
                 ConversionOperatorDeclarator operatorDeclarator = (ConversionOperatorDeclarator) n.f2.f0.choice;
                 NodeSequence nodeSequence = (NodeSequence) operatorDeclarator.f0.choice;
@@ -682,7 +694,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 String parameterName = writer.toString().trim();
                 writer.getBuffer().setLength(0);
 
-                parameters.add(new CSParameter(ctx.getValue(), new ArrayList<>(), parameterType, parameterName));
+                parameters.add(new CSParameter(ctx.getValue(), new HashSet<>(), parameterType, parameterName));
             }
 
             n.f1.accept(this, new ModifiersContext(ctx, name, modifiers)); // Parse modifiers
@@ -692,7 +704,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().addOperator(new CSMethod(ctx.getValue(), modifiers, type, name, parameters, new ArrayList<>(), body));
+            ctx.getValue().addOperator(new CSMethod(ctx.getValue(), modifiers, type, name, parameters, new HashSet<>(), body));
 
             try {
                 writer.close();
@@ -718,7 +730,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             writer.getBuffer().setLength(0);
 
             String name;
-            List<CSParameter> parameters = new ArrayList<>();
+            Set<CSParameter> parameters = new HashSet<>();
             if (nodeSequence.nodes.size() == 5) { // Type() <THIS> <LBRACKET> FormalParameterList() <RBRACKET>
                 name = nodeSequence.nodes.get(1).toString();
                 FormalParameterContext parameterContext = new FormalParameterContext(ctx, name, parameters);
@@ -745,7 +757,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                 name = name + "]";
             }
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             n.f1.accept(this, new ModifiersContext(ctx, name, modifiers));
 
             AccessorDeclarationContext accessorDeclarationContext = new AccessorDeclarationContext(ctx, new Tuple2<>(type, name), new Tuple2<>(null, null));
@@ -769,7 +781,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             TreeDumper dumper = new TreeDumper(writer);
             AccessorDeclarationContext ctx = (AccessorDeclarationContext) argu;
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             parseAccessorModifiers(n.f1.f0, modifiers);
 
             String name = ctx.getKey().getSecond() + ".set";
@@ -779,7 +791,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().setSecond(new CSMethod((CSClass) ctx.getParent().getValue(), modifiers, ctx.getKey().getFirst(), name, new ArrayList<>(), new ArrayList<>(), body));
+            ctx.getValue().setSecond(new CSMethod((CSClass) ctx.getParent().getValue(), modifiers, ctx.getKey().getFirst(), name, new HashSet<>(), new HashSet<>(), body));
         }
         return super.visit(n, argu);
     }
@@ -791,7 +803,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             TreeDumper dumper = new TreeDumper(writer);
             AccessorDeclarationContext ctx = (AccessorDeclarationContext) argu;
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             parseAccessorModifiers(n.f1.f0, modifiers);
 
             String name = ctx.getKey().getSecond() + ".get";
@@ -801,7 +813,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String body = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            ctx.getValue().setFirst(new CSMethod((CSClass) ctx.getParent().getValue(), modifiers, ctx.getKey().getFirst(), name, new ArrayList<>(), new ArrayList<>(), body));
+            ctx.getValue().setFirst(new CSMethod((CSClass) ctx.getParent().getValue(), modifiers, ctx.getKey().getFirst(), name, new HashSet<>(), new HashSet<>(), body));
         }
         return super.visit(n, argu);
     }
@@ -823,7 +835,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             String name = writer.toString().trim();
             writer.getBuffer().setLength(0);
 
-            List<CSModifier> modifiers = new ArrayList<>();
+            Set<CSModifier> modifiers = new HashSet<>();
             n.f1.accept(this, new ModifiersContext(ctx, name, modifiers));
 
             AccessorDeclarationContext accessorDeclarationContext = new AccessorDeclarationContext(ctx, new Tuple2<>(type, name), new Tuple2<>(null, null));
@@ -944,15 +956,23 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             // Get class name
             String className = writer.toString().trim();
-            String[] qualifiedName = parseDriver.resolveNamespaceOrTypeName(className, ctx.getValue());
-            Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(ctx.getValue().getNamespace(), qualifiedName);
-            CSNamespace foundNamespace = search.getFirst();
-            String[] namePartsLeft = search.getSecond();
-            if (namePartsLeft.length == 1) {
-                CSClass csClass = parseDriver.searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+            CSClass csClass = parseDriver.searchClassInTree(ctx.getValue().getNamespace(), className);
+            if (csClass != null) {
                 ctx.getValue().addUsedClass(csClass);
             } else {
-                parseDriver.addUnresolvedUsedClass(ctx.getValue(), qualifiedName);
+                String[] qualifiedName = parseDriver.resolveNamespaceOrTypeName(className, ctx.getValue());
+                Tuple2<CSNamespace, String[]> search = parseDriver.searchClosestNamespace(ctx.getValue().getNamespace(), qualifiedName);
+                CSNamespace foundNamespace = search.getFirst();
+                String[] namePartsLeft = search.getSecond();
+                if (namePartsLeft.length == 1) {
+                    csClass = parseDriver.searchClass(foundNamespace, namePartsLeft[0]);
+                    if (csClass != null)
+                        ctx.getValue().addUsedClass(csClass);
+                    else
+                        parseDriver.addUnresolvedUsedClass(ctx.getValue(), qualifiedName);
+                } else {
+                    parseDriver.addUnresolvedUsedClass(ctx.getValue(), qualifiedName);
+                }
             }
 
             try {
@@ -976,7 +996,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             n.f0.accept(dumper);
             dumper.flushWriter();
-            VariableDeclarationContext variableCtx = new VariableDeclarationContext(ctx, writer.toString().trim(), new ArrayList<>());
+            VariableDeclarationContext variableCtx = new VariableDeclarationContext(ctx, writer.toString().trim(), new HashSet<>());
 
             n.f1.accept(this, variableCtx);
 
@@ -984,8 +1004,56 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             ClassContext currentClassCtx = (ClassContext) ctx.getParent();
             String className = String.join(".", parseDriver.resolveNamespaceOrTypeName(variableCtx.getKey(), currentClassCtx.getValue()));
 
-            variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new ArrayList<>(), className, name)));
+            variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new HashSet<>(), className, name)));
 
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.visit(n, argu);
+    }
+
+    /**
+     * Adds variable name into VariableDeclarationContext, which later will be parsed into variable list
+     */
+    @Override
+    public ParseContext visit(LocalVariableDeclarator n, ParseContext argu) {
+        if (argu instanceof VariableDeclarationContext) {
+            VariableDeclarationContext ctx = (VariableDeclarationContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+            switch (n.f0.which) {
+                case 0: // Identifier() <EQUAL> LocalVariableInitializer()
+                    ((NodeSequence)n.f0.choice).nodes.get(0).accept(dumper);
+                    break;
+                case 1: // Identifier()
+                    n.f0.choice.accept(dumper);
+                    break;
+            }
+            ctx.getValue().add(writer.toString().trim());
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.visit(n, argu);
+    }
+
+
+    /**
+     * Adds variable name into VariableDeclarationContext, which later will be parsed into variable list
+     */
+    @Override
+    public ParseContext visit(ConstantDeclarator n, ParseContext argu) {
+        if (argu instanceof VariableDeclarationContext) {
+            VariableDeclarationContext ctx = (VariableDeclarationContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+            n.f0.accept(dumper);
+            ctx.getValue().add(writer.toString().trim());
             try {
                 writer.close();
             } catch (IOException e) {
@@ -1007,7 +1075,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
 
             n.f1.accept(dumper);
             dumper.flushWriter();
-            VariableDeclarationContext variableCtx = new VariableDeclarationContext(ctx, writer.toString().trim(), new ArrayList<>());
+            VariableDeclarationContext variableCtx = new VariableDeclarationContext(ctx, writer.toString().trim(), new HashSet<>());
 
             n.f2.accept(this, variableCtx);
 
@@ -1015,7 +1083,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             ClassContext currentClassCtx = (ClassContext) ctx.getParent();
             String className = String.join(".", parseDriver.resolveNamespaceOrTypeName(variableCtx.getKey(), currentClassCtx.getValue()));
 
-            variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new ArrayList<>(), className, name)));
+            variableCtx.getValue().forEach(name -> ctx.getValue().addLocalVariable(new CSParameter(currentClassCtx.getValue(), new HashSet<>(), className, name)));
 
             try {
                 writer.close();
@@ -1060,6 +1128,9 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                     varType = classCtx.getKey();
                 } else { // Chain starts with variable
                     CSParameter parameter = findParameter(callChain[0], ctx);
+                    if (parameter == null) {
+                        return super.visit(n, argu);
+                    }
                     varType = parameter.getType();
                 }
 
@@ -1071,7 +1142,11 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                     CSNamespace foundNamespace = search.getFirst();
                     String[] namePartsLeft = search.getSecond();
                     if (namePartsLeft.length == 1) {
-                        CSClass csClass = parseDriver.searchClassOrCreate(foundNamespace, namePartsLeft[0]);
+                        CSClass csClass = parseDriver.searchClass(foundNamespace, namePartsLeft[0]);
+                        if (csClass == null) {
+                            parseDriver.addUnresolvedUsedMethod(ctx.getValue(), qualifiedName, Arrays.copyOfRange(callChain, i, callChain.length));
+                            break;
+                        }
                         String[] finalCallChain = callChain;
                         int finalI = i;
                         Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(finalCallChain[finalI])).findFirst();
@@ -1120,7 +1195,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
         return null;
     }
 
-    private void parseAccessorModifiers(NodeOptional node, List<CSModifier> modifiers) {
+    private void parseAccessorModifiers(NodeOptional node, Set<CSModifier> modifiers) {
         if (node.present()) {
             if (((AccessorModifier) node.node).f0.choice instanceof NodeSequence) {
                 NodeSequence sequence = (NodeSequence) ((AccessorModifier) node.node).f0.choice; // (internal protected) | (protected internal)

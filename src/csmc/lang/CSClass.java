@@ -1,98 +1,99 @@
 package csmc.lang;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
 
 public class CSClass {
-    private List<CSModifier> modifiers;
+    private Set<CSModifier> modifiers;
     private String name;
-    private List<String> typeParameters;
+    private Set<String> typeParameters;
     private CSClass parent;
-    private List<CSClass> children;
-    private List<CSClass> usedClasses;
+    private Set<CSClass> children;
+    private Set<CSClass> usedClasses;
     private CSNamespace namespace;
 
-    private List<CSParameter> constants;
-    private List<CSParameter> fields;
-    private List<CSParameter> events;
-    private List<CSMethod> methods;
-    private List<CSMethod> operators;
-    private List<CSMethod> destructors;
-    private List<CSProperty> properties;
-    private List<CSIndexer> indexers;
-    private List<CSConstructor> constructors;
-    private List<CSConstructor> staticConstructors;
+    private Set<CSParameter> constants;
+    private Set<CSParameter> fields;
+    private Set<CSParameter> events;
+    private Set<CSMethod> methods;
+    private Set<CSMethod> operators;
+    private Set<CSMethod> destructors;
+    private Set<CSProperty> properties;
+    private Set<CSIndexer> indexers;
+    private Set<CSConstructor> constructors;
+    private Set<CSConstructor> staticConstructors;
 
     public CSClass(String className, CSNamespace namespace) {
-        this.modifiers = new ArrayList<>();
+        this.modifiers = new HashSet<>();
         this.name = className;
-        this.typeParameters = new ArrayList<>();
+        this.typeParameters = new HashSet<>();
         this.parent = null;
-        this.children = new ArrayList<>();
-        this.usedClasses = new ArrayList<>();
+        this.children = new HashSet<>();
+        this.usedClasses = new HashSet<>();
         this.namespace = namespace;
 
-        this.constants = new ArrayList<>();
-        this.fields = new ArrayList<>();
-        this.events = new ArrayList<>();
-        this.methods = new ArrayList<>();
-        this.operators = new ArrayList<>();
-        this.destructors = new ArrayList<>();
-        this.properties = new ArrayList<>();
-        this.indexers = new ArrayList<>();
-        this.constructors = new ArrayList<>();
-        this.staticConstructors = new ArrayList<>();
+        this.constants = new HashSet<>();
+        this.fields = new HashSet<>();
+        this.events = new HashSet<>();
+        this.methods = new HashSet<>();
+        this.operators = new HashSet<>();
+        this.destructors = new HashSet<>();
+        this.properties = new HashSet<>();
+        this.indexers = new HashSet<>();
+        this.constructors = new HashSet<>();
+        this.staticConstructors = new HashSet<>();
     }
 
     public CSNamespace getNamespace() {
         return namespace;
     }
 
-    public List<CSModifier> getModifiers() {
+    public Set<CSModifier> getModifiers() {
         return modifiers;
     }
 
-    public List<String> getTypeParameters() {
+    public Set<String> getTypeParameters() {
         return typeParameters;
     }
 
-    public List<CSParameter> getConstants() {
+    public Set<CSParameter> getConstants() {
         return constants;
     }
 
-    public List<CSParameter> getFields() {
+    public Set<CSParameter> getFields() {
         return fields;
     }
 
-    public List<CSParameter> getEvents() {
+    public Set<CSParameter> getEvents() {
         return events;
     }
 
-    public List<CSMethod> getMethods() {
+    public Set<CSMethod> getMethods() {
         return methods;
     }
 
-    public List<CSMethod> getOperators() {
+    public Set<CSMethod> getOperators() {
         return operators;
     }
 
-    public List<CSMethod> getDestructors() {
+    public Set<CSMethod> getDestructors() {
         return destructors;
     }
 
-    public List<CSProperty> getProperties() {
+    public Set<CSProperty> getProperties() {
         return properties;
     }
 
-    public List<CSIndexer> getIndexers() {
+    public Set<CSIndexer> getIndexers() {
         return indexers;
     }
 
-    public List<CSConstructor> getConstructors() {
+    public Set<CSConstructor> getConstructors() {
         return constructors;
     }
 
-    public List<CSConstructor> getStaticConstructors() {
+    public Set<CSConstructor> getStaticConstructors() {
         return staticConstructors;
     }
 
@@ -104,11 +105,11 @@ public class CSClass {
         return parent;
     }
 
-    public List<CSClass> getUsedClasses() {
+    public Set<CSClass> getUsedClasses() {
         return usedClasses;
     }
 
-    public List<CSClass> getChildren() {
+    public Set<CSClass> getChildren() {
         return children;
     }
 
@@ -123,94 +124,83 @@ public class CSClass {
     }
 
     public void addModifier(CSModifier modifier) {
-        if (!modifiers.contains(modifier)) {
-            modifiers.add(modifier);
-        }
+        modifiers.add(modifier);
     }
 
     public void addTypeParameter(String typeParameter) {
-        if (!typeParameters.contains(typeParameter)) {
-            typeParameters.add(typeParameter);
-        }
+        typeParameters.add(typeParameter);
     }
 
     public void addChild(CSClass child) {
-        if (!children.contains(child)) {
-            children.add(child);
-        }
+        children.add(child);
         if (child.getParent() != this) {
             child.setParent(this);
         }
     }
 
     public void addConstant(CSParameter constant) {
-        if (!constants.contains(constant)) {
-            constants.add(constant);
-        }
+        constants.add(constant);
     }
 
     public void addField(CSParameter field) {
-        if (!fields.contains(field)) {
-            fields.add(field);
-        }
+        fields.add(field);
     }
 
     public void addEvent(CSParameter event) {
-        if (!events.contains(event)) {
-            events.add(event);
-        }
+        events.add(event);
     }
 
     public void addMethod(CSMethod method) {
-        if (!methods.contains(method)) {
-            methods.add(method);
-        }
+        methods.add(method);
     }
 
     public void addOperator(CSMethod operator) {
-        if (!operators.contains(operator)) {
-            operators.add(operator);
-        }
+        operators.add(operator);
     }
 
     public void addDestructor(CSMethod destructor) {
-        if (!destructors.contains(destructor)) {
-            destructors.add(destructor);
-        }
+        destructors.add(destructor);
     }
 
     public void addProperty(CSProperty property) {
-        if (!properties.contains(property)) {
-            properties.add(property);
-        }
+        properties.add(property);
     }
 
     public void addIndexer(CSIndexer indexer) {
-        if (!indexers.contains(indexer)) {
-            indexers.add(indexer);
-        }
+        indexers.add(indexer);
     }
 
     public void addConstructor(CSConstructor constructor) {
-        if (!constructors.contains(constructor)) {
-            constructors.add(constructor);
-        }
+        constructors.add(constructor);
     }
 
     public void addStaticConstructor(CSConstructor staticConstructor) {
-        if (!staticConstructors.contains(staticConstructor)) {
-            staticConstructors.add(staticConstructor);
-        }
+        staticConstructors.add(staticConstructor);
     }
 
     public void addUsedClass(CSClass csClass) {
-        if (!usedClasses.contains(csClass)) {
-            usedClasses.add(csClass);
-        }
+        usedClasses.add(csClass);
     }
 
     @Override
     public String toString() {
         return namespace.toString().equals("global") ? name : namespace.toString() + "." + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CSClass csClass = (CSClass) o;
+        return Objects.equals(modifiers, csClass.modifiers) &&
+                Objects.equals(name, csClass.name) &&
+                Objects.equals(typeParameters, csClass.typeParameters) &&
+                Objects.equals(parent, csClass.parent) &&
+                Objects.equals(namespace, csClass.namespace);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(modifiers, name, typeParameters, parent, namespace);
     }
 }

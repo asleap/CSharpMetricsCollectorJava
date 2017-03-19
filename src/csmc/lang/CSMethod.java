@@ -1,29 +1,30 @@
 package csmc.lang;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class CSMethod extends CSClassEntity {
-    private List<CSParameter> formalParameters;
-    private List<String> typeParameters;
+    private Set<CSParameter> formalParameters;
+    private Set<String> typeParameters;
     private String body;
-    private List<CSParameter> localVariables;
-    private List<CSMethod> invokedMethods;
+    private Set<CSParameter> localVariables;
+    private Set<CSMethod> invokedMethods;
 
-    public CSMethod(CSClass csClass, List<CSModifier> modifiers, String type, String name, List<CSParameter> formalParameters, List<String> typeParameters, String body) {
+    public CSMethod(CSClass csClass, Set<CSModifier> modifiers, String type, String name, Set<CSParameter> formalParameters, Set<String> typeParameters, String body) {
         super(csClass, modifiers, type, name);
         this.formalParameters = formalParameters;
         this.typeParameters = typeParameters;
         this.body = body;
-        this.localVariables = new ArrayList<>();
-        this.invokedMethods = new ArrayList<>();
+        this.localVariables = new HashSet<>();
+        this.invokedMethods = new HashSet<>();
     }
 
-    public List<CSParameter> getFormalParameters() {
+    public Set<CSParameter> getFormalParameters() {
         return formalParameters;
     }
 
-    public List<String> getTypeParameters() {
+    public Set<String> getTypeParameters() {
         return typeParameters;
     }
 
@@ -31,23 +32,34 @@ public class CSMethod extends CSClassEntity {
         return body;
     }
 
-    public List<CSParameter> getLocalVariables() {
+    public Set<CSParameter> getLocalVariables() {
         return localVariables;
     }
 
-    public List<CSMethod> getInvokedMethods() {
+    public Set<CSMethod> getInvokedMethods() {
         return invokedMethods;
     }
 
     public void addLocalVariable(CSParameter variable) {
-        if (!localVariables.contains(variable)) {
-            localVariables.add(variable);
-        }
+        localVariables.add(variable);
     }
 
     public void addInvokedMethod(CSMethod invokedMethod) {
-        if (!invokedMethods.contains(invokedMethod)) {
-            invokedMethods.add(invokedMethod);
-        }
+        invokedMethods.add(invokedMethod);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        CSMethod csMethod = (CSMethod) o;
+        return Objects.equals(formalParameters, csMethod.formalParameters) &&
+                Objects.equals(typeParameters, csMethod.typeParameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), formalParameters, typeParameters);
     }
 }

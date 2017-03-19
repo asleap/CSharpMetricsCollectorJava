@@ -1,8 +1,8 @@
 options {
-  LOOKAHEAD = 1;
+  LOOKAHEAD = 6;
   CHOICE_AMBIGUITY_CHECK = 2;
   OTHER_AMBIGUITY_CHECK = 1;
-  STATIC = true;
+  STATIC = false;
   DEBUG_PARSER = false;
   DEBUG_LOOKAHEAD = false;
   DEBUG_TOKEN_MANAGER = false;
@@ -10,12 +10,12 @@ options {
   JAVA_UNICODE_ESCAPE = true;
   UNICODE_INPUT = true;
   IGNORE_CASE = false;
-  USER_TOKEN_MANAGER = false;
-  USER_CHAR_STREAM = false;
   BUILD_PARSER = true;
   BUILD_TOKEN_MANAGER = true;
   SANITY_CHECK = true;
   FORCE_LA_CHECK = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = true;
 }
 
 PARSER_BEGIN(CSharpParser)
@@ -45,9 +45,10 @@ SPECIAL_TOKEN : // Tokens which should be created but should not be passed to th
 TOKEN :
 {
   // < NEW_LINE: ["\n"] | ("\r\n") >
+  < UNICODE_BOM: "\uFEFF"|"\uEFBBBF" >
 
   // Pre-processor
-  < HASH: "#" >
+  | < HASH: "#" >
   | < DEFINE: "define" >
   | < UNDEF: "undef" >
 
@@ -230,7 +231,7 @@ TOKEN :
                          |("\\u"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
                          |("\\U"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
                          ) "'" >
-  | < STRING_LITERAL: ( "\"" ((~["'","\\","\r","\n","\0","\u2028","\u2029"])
+  | < STRING_LITERAL: ( "\"" ((~["\\","\r","\n","\0","\u2028","\u2029"])
                               |("\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v")
                               |("\\x"(["0"-"9","a"-"f","A"-"F"]))
                               |("\\x"(["0"-"9","a"-"f","A"-"F"])(["0"-"9","a"-"f","A"-"F"]))
@@ -248,7 +249,7 @@ TOKEN :
 void Input() :
 {}
 {
-  Start() <EOF>
+  [<UNICODE_BOM>] Start() <EOF>
 }
 
 /** Brace matching production. */
@@ -1207,7 +1208,7 @@ void ParameterArray() :
 void MethodBody() :
 {}
 {
-  Block()
+  LOOKAHEAD(<LBRACE>) Block()
   | <EQUAL_GREATER> Expression() <SEMICOLON>
   | <SEMICOLON>
 }
@@ -1221,7 +1222,7 @@ void StatementListOpt() :
 void StatementList() :
 {}
 {
-  [ LOOKAHEAD(Statement()) Statement() StatementList() ]
+  [ Statement() StatementList() ]
 }
 
 void PropertyDeclaration() :
@@ -2034,14 +2035,14 @@ void Expression() :
 {}
 {
   LOOKAHEAD(Assignment()) Assignment()
-  | LOOKAHEAD(NonAssignmentExpression()) NonAssignmentExpression()
+  | NonAssignmentExpression()
 }
 
 void NonAssignmentExpression() :
 {}
 {
-  LOOKAHEAD(QueryExpression()) QueryExpression()
-  | LOOKAHEAD(ConditionalExpression()) ConditionalExpression()
+  ConditionalExpression()
+  | LOOKAHEAD(QueryExpression()) QueryExpression()
   | LOOKAHEAD(LambdaExpression()) LambdaExpression()
 }
 
@@ -2194,7 +2195,7 @@ void UnaryExpression() :
 {
   LOOKAHEAD(CastExpression()) CastExpression()
   | LOOKAHEAD(NullConditionalExpression()) NullConditionalExpression()
-  | LOOKAHEAD(PrimaryExpression()) PrimaryExpression()
+  | PrimaryExpression()
   | <PLUS> UnaryExpression()
   | <MINUS> UnaryExpression()
   | <EXCLAMATION> UnaryExpression()
@@ -2210,7 +2211,7 @@ void PrimaryExpression() :
 {
   LOOKAHEAD(ArrayCreationExpression()) ArrayCreationExpression() PrimaryExpressionPrime()
   | LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime()
-  | LOOKAHEAD(PrimaryNoArrayCreationExpressionPrime()) PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
+  | PrimaryNoArrayCreationExpressionPrime() PrimaryExpressionPrime()
   | SizeofExpression() PrimaryExpressionPrime()
   | PredefinedType() <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
   | QualifiedAliasMember() <DOT> Identifier() PrimaryExpressionPrime()
@@ -2219,9 +2220,9 @@ void PrimaryExpression() :
 void PrimaryExpressionPrime() :
 {}
 {
-  [ LOOKAHEAD(<DOT> | <LPAREN> | <MINUS_GREATER>) (<DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
-  | <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
-  | <MINUS_GREATER> Identifier() PrimaryExpressionPrime()) ]
+  [ LOOKAHEAD(1) <DOT> Identifier() TypeArgumentListOpt() PrimaryExpressionPrime()
+  | LOOKAHEAD(1) <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
+  | LOOKAHEAD(1) <MINUS_GREATER> Identifier() PrimaryExpressionPrime() ]
    // | <DBL_PLUS> PrimaryExpressionPrime()
    // | <DBL_MINUS> PrimaryExpressionPrime()
 }
@@ -2319,6 +2320,7 @@ void InvocationExpression() :
 {}
 {
   PrimaryExpression() <LPAREN> ArgumentListOpt() <RPAREN>
+//  PrimaryNoArrayCreationExpressionPrime() <LPAREN> ArgumentListOpt() <RPAREN>
 }
 
 void ElementAccess() :
@@ -3052,8 +3054,8 @@ void AssignmentOperator() :
 void Statement() :
 {}
 {
-  LOOKAHEAD(EmbeddedStatement()) EmbeddedStatement()
-  | LOOKAHEAD(DeclarationStatement()) DeclarationStatement()
+  EmbeddedStatement()
+  | DeclarationStatement()
   | LabeledStatement()
 }
 
@@ -3093,7 +3095,7 @@ void LabeledStatement() :
 void DeclarationStatement() :
 {}
 {
-  LocalConstantDeclaration() <SEMICOLON>
+  LOOKAHEAD(<CONST>) LocalConstantDeclaration() <SEMICOLON>
   | LocalVariableDeclaration() <SEMICOLON>
 }
 
@@ -3163,20 +3165,20 @@ void EmbeddedStatement() :
   | IterationStatement()
   | JumpStatement()
   | TryStatement()
-  | LOOKAHEAD(CheckedStatement()) CheckedStatement()
-  | LOOKAHEAD(UncheckedStatement()) UncheckedStatement()
+  | CheckedStatement()
+  | UncheckedStatement()
   | LockStatement()
   | UsingStatement()
   | YieldStatement()
+  | ExpressionStatement()
   | EmbeddedStatementUnsafe()
   | EmptyStatement()
-  | LOOKAHEAD(ExpressionStatement()) ExpressionStatement()
 }
 
 void Block() :
 {}
 {
-  <LBRACE> StatementListOpt() <RBRACE>
+  <LBRACE> StatementList() <RBRACE>
 }
 
 void EmptyStatement() :
@@ -3194,12 +3196,13 @@ void ExpressionStatement() :
 void StatementExpression() :
 {}
 {
-  LOOKAHEAD(InvocationExpression()) InvocationExpression()
-  | LOOKAHEAD(NullConditionalInvocationExpression()) NullConditionalInvocationExpression()
-  | LOOKAHEAD(ObjectCreationExpression()) ObjectCreationExpression()
-  | LOOKAHEAD(Assignment()) Assignment()
-  | LOOKAHEAD(PostIncrementExpression()) PostIncrementExpression()
-  | LOOKAHEAD(PostDecrementExpression()) PostDecrementExpression()
+  ObjectCreationExpression()
+  | LOOKAHEAD(PrimaryExpression() AssignmentOperator()) Assignment()
+  | PrimaryExpression()
+  | PostIncrementExpression()
+  | PostDecrementExpression()
+//  | InvocationExpression()
+  | NullConditionalInvocationExpression()
   | PreIncrementExpression()
   | PreDecrementExpression()
   | AwaitExpression()
