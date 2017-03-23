@@ -1,7 +1,6 @@
 package csmc.javacc.parse;
 
 import csmc.javacc.generated.CSharpParser;
-import csmc.javacc.generated.JavaCharStream;
 import csmc.javacc.generated.ParseException;
 import csmc.javacc.generated.syntaxtree.Input;
 import csmc.javacc.parse.util.Tuple3;
@@ -299,7 +298,7 @@ public class ParseDriver {
     public void parse(InputStream stream) {
         CSharpParser parser = null;
         try {
-            parser = new CSharpParser(new JavaCharStream(stream, "UTF-8"));
+            parser = new CSharpParser(new BufferedReader(new InputStreamReader(stream, "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -335,7 +334,7 @@ public class ParseDriver {
             }
             CSharpParser parser = null;
             try {
-                parser = new CSharpParser(new JavaCharStream(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))));
+                parser = new CSharpParser(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")));
             } catch (FileNotFoundException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
