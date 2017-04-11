@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using M = System.Math;
+using IO = System.IO;
 
 using X = int1;
 using Y = ABC.X<int>;
@@ -207,31 +208,33 @@ namespace My
                 else
                     continue;
             }
-//            checked
-//            {
-//                checked(++i);
-//            }
-//            unchecked
-//            {
-//                unchecked(++i);
-//            }
-//            lock (sync)
-//                process();
+            checked
+            {
+                checked(++i);
+            }
+            unchecked
+            {
+                unchecked(++i);
+            }
+            lock (sync)
+                process();
             using (var v = BeginScope())
             using (A a = new A())
             using (A a = new A(), b = new A())
             using (BeginScope())
                 return;
 //            yield return this.items[3];
-//            yield break;
+            yield break;
 //            fixed (int* p = stackalloc int[100], q = &y)
-//            {
-//                *intref = 1;
-//            }
+            fixed (int* p = new int[100], q = &y)
+            {
+                *intref = 1;
+            }
 //            fixed (int* p = stackalloc int[100])
-//            {
-//                *intref = 1;
-//            }
+            fixed (int* p = new int[100])
+            {
+                *intref = 1;
+            }
             unsafe
             {
                 int* p = null;
@@ -276,10 +279,10 @@ namespace My
         {
         }
         private readonly int f1;
-        [Obsolete]
-        [NonExisting]
-        [Foo::NonExisting(var, 5)]
-        [CLSCompliant(false)]
+//        [Obsolete]
+//        [NonExisting]
+//        [Foo::NonExisting(var, 5)]
+//        [CLSCompliant(false)]
         [Obsolete, System.NonSerialized, NonSerialized, CLSCompliant(true || false & true)]
         private volatile int f2;
         [return: Obsolete]
@@ -310,10 +313,10 @@ namespace My
             protected internal get;
             internal protected set;
         }
-        [method: Obsolete]
-        [field: Obsolete]
-        [event: Obsolete]
-        public readonly event Event E;
+//        [method: Obsolete]
+//        [field: Obsolete]
+//        [event: Obsolete]
+//        public readonly event Event E; // readonly modifier is invalid for events
         [event: Test]
         public event Action E1
         {
@@ -378,7 +381,7 @@ namespace My
         {
             return first.Add(second);
         }
-        fixed int field[10];
+        fixed int Field[10];
         class C
         {
         }
@@ -391,7 +394,7 @@ namespace My
             get;
             set;
         }
-        unsafe void UpdateSignatureByHashingContent([In]byte* buffer, int size);
+//        unsafe void UpdateSignatureByHashingContent([In]byte* buffer, int size);
     }
     [type: Flags]
     public enum E
@@ -399,13 +402,13 @@ namespace My
         A,
         B = A,
         C = 2 + A,
-#if DEBUG
-        D,
-        }
-#else
+//#if DEBUG
+//        D,
+//        }
+//#else
         E,
         }
-#endif
+//#endif
 
     
     public delegate void Delegate(object P);
@@ -413,14 +416,14 @@ namespace My
     {
         using System;
         using System.Collections;
-        public class Список
+        public class List
         {
             public static IEnumerable Power(int number, int exponent)
             {
-                Список Список = new Список();
-                Список.Main();
+                List list = new List();
+                list.Main();
                 int counter = (0 + 0);
-                int אתר = 0;
+                int a = 0;
                 while (++counter++ < --exponent--)
                 {
                     result = result * number + +number+++++number;
@@ -545,7 +548,8 @@ namespace ConsoleApplication1
                 var result = typeof(IEnumerable<int>);
                 var t = typeof(int?) == typeof(Nullable<int>);
                 t = typeof(IEnumerable<int?[][][]>);
-                return typeof(IEnumerable<>);
+//                return typeof(IEnumerable<>);
+                return typeof(IEnumerable<T>);
             }
             set
             {
@@ -610,15 +614,15 @@ namespace Comments.XmlComments.UndocumentedKeywords
 
     class TestClassXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX22/*Scen9*/{ }
 
-    class yield
+    class Yield
     {
-        void Foo<U>(__arglist)
+        void Foo<U>(string __arglist)
         {
             C<U> c = null;
             c.M<int>(5, default(U));
             TypedReference tr = __makeref(c);
             Type t = __reftype(tr);
-            int j = __refvalue(tr, int);
+//            int j = __refvalue(tr, int);
             Params(a: t, b: t);
             Params(ref c, out c);
         }
@@ -629,13 +633,13 @@ namespace Comments.XmlComments.UndocumentedKeywords
 
         public partial void OnError();
 
-        public partial void method()
+        public partial void Method()
         {
             int?[] a = new int?[5];/*[] bug*/ // YES []
-            int[] var = { 1, 2, 3, 4, 5 };/*,;*/
+            int[] Var = { 1, 2, 3, 4, 5 };/*,;*/
             int i = a[i];/*[]*/
             Foo<T> f = new Foo<int>();/*<> ()*/
-            f.method();/*().*/
+            f.Method();/*().*/
             i = i + i - i * i / i % i & i | i ^ i;/*+ - * / % & | ^*/
             bool b = true & false | true ^ false;/*& | ^*/
             b = !b;/*!*/
@@ -646,8 +650,8 @@ namespace Comments.XmlComments.UndocumentedKeywords
             i++;/*++*/
             i--;/*--*/
             b = true && false || true;/*&& ||*/
-            i << 5;/*<<*/
-            i >> 5;/*>>*/
+//            i << 5;/*<<*/
+//            i >> 5;/*>>*/
             b = i == i && i != i && i <= i && i >= i;/*= == && != <= >=*/
             i += 5.0;/*+=*/
             i -= i;/*-=*/
@@ -668,8 +672,8 @@ namespace Comments.XmlComments.UndocumentedKeywords
                 p->x = 10;/*->*/
             }
             IO::BinaryReader br = null;
-            x[i: 1] = 3;
-            x[i: 1, j: 5] = "str";
+//            x[i: 1] = 3;
+//            x[i: 1, j: 5] = "str";
         }
 
         struct Point { public int X; public int Y; public void ThisAccess() { this = this; } }
