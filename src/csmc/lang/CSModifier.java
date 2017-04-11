@@ -21,5 +21,6 @@ public enum CSModifier {
     READONLY,
     VIRTUAL,
     OVERRIDE,
-    THIS
+    THIS,
+    ASYNC
 }

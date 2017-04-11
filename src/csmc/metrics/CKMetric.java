@@ -3,10 +3,7 @@ package csmc.metrics;
 import csmc.javacc.parse.util.Tuple2;
 import csmc.lang.*;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -107,6 +104,7 @@ public class CKMetric {
             allMethodStream = Stream.concat(allMethodStream, csClass.getProperties().stream().map(CSProperty::getSetter));
             allMethodStream = Stream.concat(allMethodStream, csClass.getIndexers().stream().map(CSProperty::getGetter));
             allMethodStream = Stream.concat(allMethodStream, csClass.getIndexers().stream().map(CSProperty::getSetter));
+            allMethodStream = allMethodStream.filter(Objects::nonNull);
             return allMethodStream;
         };
 
@@ -162,6 +160,7 @@ public class CKMetric {
         allMethodStream = Stream.concat(allMethodStream, csClass.getProperties().stream().map(CSProperty::getSetter));
         allMethodStream = Stream.concat(allMethodStream, csClass.getIndexers().stream().map(CSProperty::getGetter));
         allMethodStream = Stream.concat(allMethodStream, csClass.getIndexers().stream().map(CSProperty::getSetter));
+        allMethodStream = allMethodStream.filter(Objects::nonNull);
         allMethodStream.peek(rfc::add).map(CSMethod::getInvokedMethods).flatMap(Collection::stream).forEach(rfc::add);
 
         return rfc.size();

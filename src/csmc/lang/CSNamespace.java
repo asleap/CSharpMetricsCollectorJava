@@ -21,6 +21,7 @@ public class CSNamespace {
         this.aliases = new HashMap<>();
         this.namespaces = new HashSet<>();
         this.classes = new HashSet<>();
+        this.aliases.put("global", "global");
     }
 
     public Set<String> getImports() {

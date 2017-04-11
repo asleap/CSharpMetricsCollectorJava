@@ -855,8 +855,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(IndexerModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -864,8 +863,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(ConstantModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -873,8 +871,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(FieldModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -882,8 +879,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(MethodModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -891,8 +887,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(ParameterModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -900,8 +895,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(ConstructorModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -909,8 +903,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(EventModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -918,8 +911,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(OperatorModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -927,8 +919,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(PropertyModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -936,8 +927,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(ClassModifier n, ParseContext argu) {
         if (argu instanceof ModifiersContext) {
-            NodeToken modifierToken = (NodeToken) n.f0.choice;
-            ((ModifiersContext) argu).getValue().add(CSModifier.valueOf(modifierToken.tokenImage.toUpperCase()));
+            parseModifier(n.f0.choice, (ModifiersContext) argu);
         }
         return super.visit(n, argu);
     }
@@ -1204,6 +1194,21 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             } else { // protected | internal | private
                 modifiers.add(CSModifier.valueOf(((AccessorModifier) node.node).f0.choice.toString().trim().toUpperCase()));
             }
+        }
+    }
+
+    private void parseModifier(Node n, ModifiersContext argu) {
+        StringWriter writer = new StringWriter();
+        TreeDumper dumper = new TreeDumper(writer);
+
+        n.accept(dumper);
+        dumper.flushWriter();
+        argu.getValue().add(CSModifier.valueOf(writer.toString().trim().toUpperCase()));
+
+        try {
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
