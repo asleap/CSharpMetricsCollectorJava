@@ -2290,6 +2290,7 @@ void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementA
 {}
 {
   Literal()
+  | AnonymousMethodExpression()
   | SimpleName()
   | ParanthesizedExpression()
   | ThisAccess()
@@ -2302,13 +2303,13 @@ void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementA
   | UncheckedExpression()
   | DefaultValueExpression()
   | NameofExpression()
-  | AnonymousMethodExpression()
 }
 
 void PrimaryNoArrayCreationExpression() :
 {}
 {
   LOOKAHEAD(Literal()) Literal() PrimaryNoArrayCreationExpressionPrime2()
+  | LOOKAHEAD(AnonymousMethodExpression()) AnonymousMethodExpression() PrimaryNoArrayCreationExpressionPrime2()
   | LOOKAHEAD(SimpleName()) SimpleName() PrimaryNoArrayCreationExpressionPrime2()
   | LOOKAHEAD(ParanthesizedExpression()) ParanthesizedExpression() PrimaryNoArrayCreationExpressionPrime2()
   | LOOKAHEAD(MemberAccess()) MemberAccess() PrimaryNoArrayCreationExpressionPrime2()
@@ -2325,7 +2326,6 @@ void PrimaryNoArrayCreationExpression() :
   | LOOKAHEAD(UncheckedExpression()) UncheckedExpression() PrimaryNoArrayCreationExpressionPrime2()
   | LOOKAHEAD(DefaultValueExpression()) DefaultValueExpression() PrimaryNoArrayCreationExpressionPrime2()
   | LOOKAHEAD(NameofExpression()) NameofExpression() PrimaryNoArrayCreationExpressionPrime2()
-  | LOOKAHEAD(AnonymousMethodExpression()) AnonymousMethodExpression() PrimaryNoArrayCreationExpressionPrime2()
   | LOOKAHEAD(PointerMemberAccess()) PointerMemberAccess() PrimaryNoArrayCreationExpressionPrime2()
   | SizeofExpression() PrimaryNoArrayCreationExpressionPrime2()
 }
@@ -2353,7 +2353,40 @@ void Identifier() :
 {}
 {
   <IDENTIFIER>
+  // Keywords that could be used as identifiers
+  | <ADD>
+  | <ALIAS>
+  | <ASYNC>
+  | <ASCENDING>
+  | <ASSEMBLY>
+  | <AWAIT>
+  | <BY>
+  | <DESCENDING>
+  | <DYNAMIC>
+  | <EQUALS>
+  | <FIELD>
+  | <FROM>
+  | <GET>
+  | <GROUP>
+  | <INTO>
+  | <JOIN>
+  | <LET>
+  | <METHOD>
+  | <MODULE>
+  | <NAMEOF>
+  | <ON>
+  | <ORDERBY>
+  | <PARAM>
+  | <PARTIAL>
+  | <PROPERTY>
+  | <REMOVE>
+  | <SELECT>
+  | <SET>
   | <TYPE>
+  | <VAR>
+  | <WHEN>
+  | <WHERE>
+  | <YIELD>
 }
 
 void SimpleName() :

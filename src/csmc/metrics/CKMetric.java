@@ -180,7 +180,7 @@ public class CKMetric {
         Set<Tuple2<CSMethod, CSMethod>> doNotShare = new HashSet<>();
         Set<Tuple2<CSMethod, CSMethod>> doShare = new HashSet<>();
 
-        List<CSMethod> methodList = csClass.getMethods().stream().collect(Collectors.toList());
+        List<CSMethod> methodList = new ArrayList<>(csClass.getMethods());
         for (int i = 0; i < methodList.size() - 1; i++) {
             for (int j = i + 1; j < methodList.size(); j++) {
                 boolean flag = false;
