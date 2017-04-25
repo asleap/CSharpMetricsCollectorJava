@@ -163,7 +163,7 @@ public class ParseDriver {
         if (i >= 0)
             contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, i);
         else
-            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, 0); //  TODO: Smart type search
+            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, 0);
         List<String> fullyQualifiedName = new ArrayList<>();
         fullyQualifiedName.addAll(Arrays.asList(contextNamespaceName));
         fullyQualifiedName.addAll(Arrays.asList(partiallyQualifiedName));
