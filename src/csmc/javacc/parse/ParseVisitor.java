@@ -427,9 +427,20 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
     @Override
     public ParseContext visit(Identifier n, ParseContext argu) {
         if (argu instanceof IdentifierContext) {
-            if (((IdentifierContext) argu).getValue().length() > 0)
-                ((IdentifierContext) argu).getValue().append(".");
-            ((IdentifierContext) argu).getValue().append(n.f0.toString());
+            IdentifierContext ctx = (IdentifierContext) argu;
+            StringWriter writer = new StringWriter();
+            TreeDumper dumper = new TreeDumper(writer);
+
+            if (ctx.getValue().length() > 0)
+                ctx.getValue().append(".");
+            n.f0.accept(dumper);
+            ctx.getValue().append(writer.toString().trim());
+
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if (argu instanceof MethodContext){
             MethodContext ctx = (MethodContext) argu;
             StringWriter writer = new StringWriter();

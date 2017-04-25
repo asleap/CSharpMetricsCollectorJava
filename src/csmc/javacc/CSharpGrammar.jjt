@@ -2282,7 +2282,8 @@ void PrimaryExpressionPrime() :
   | LOOKAHEAD(1) <LPAREN> ArgumentListOpt() <RPAREN> PrimaryExpressionPrime()
   | LOOKAHEAD(1) <MINUS_GREATER> Identifier() PrimaryExpressionPrime()
   | LOOKAHEAD(1) <DBL_PLUS> PrimaryExpressionPrime()
-  | LOOKAHEAD(1) <DBL_MINUS> PrimaryExpressionPrime() ]
+  | LOOKAHEAD(1) <DBL_MINUS> PrimaryExpressionPrime()
+  | LOOKAHEAD(1) <LBRACKET> ExpressionList() <RBRACKET> PrimaryExpressionPrime() ]
 }
 
 void PrimaryNoArrayCreationExpressionPrime() : // Without MemberAccess, ElementAccess, PostIncrementExpression, PostDecrementExpression, InvocationExpression and Unsafe
@@ -2349,9 +2350,10 @@ void Literal() :
 }
 
 void Identifier() :
-{ Token t; }
+{}
 {
   <IDENTIFIER>
+  | <TYPE>
 }
 
 void SimpleName() :

@@ -70,7 +70,10 @@ public class CSClass {
     }
 
     public Set<CSMethod> getMethods() {
-        return methods;
+        Set<CSMethod> result = new HashSet<>(methods);
+        if (parent != null)
+            result.addAll(parent.getMethods());
+        return result;
     }
 
     public Set<CSMethod> getOperators() {

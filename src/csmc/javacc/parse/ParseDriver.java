@@ -163,7 +163,7 @@ public class ParseDriver {
         if (i >= 0)
             contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, i);
         else
-            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, 0);
+            contextNamespaceName = Arrays.copyOfRange(contextNamespaceName, 0, 0); //  TODO: Smart type search
         List<String> fullyQualifiedName = new ArrayList<>();
         fullyQualifiedName.addAll(Arrays.asList(contextNamespaceName));
         fullyQualifiedName.addAll(Arrays.asList(partiallyQualifiedName));
@@ -252,45 +252,48 @@ public class ParseDriver {
                     + " for using class " + tuple.getFirst().toString());
         }
 
-        do {
-            oldSize = unresolvedUsedMethods.size();
-            for (Iterator<Tuple3<CSMethod, String[], String[]>> it = unresolvedUsedMethods.iterator(); it.hasNext(); ) {
-                Tuple3<CSMethod, String[], String[]> current = it.next();
-                CSMethod usingMethod = current.getFirst();
-                String varType = String.join(".", current.getSecond());
-                String[] callChain = current.getThird();
+        List<Tuple3<CSMethod, String[], String>> skippedUnresolvedUsedMethods = new ArrayList<>(); // Using method, fully-qualified type name, invoked methods names
+        for (Iterator<Tuple3<CSMethod, String[], String[]>> it = unresolvedUsedMethods.iterator(); it.hasNext(); ) {
+            Tuple3<CSMethod, String[], String[]> current = it.next();
+            CSMethod usingMethod = current.getFirst();
+            String varType = String.join(".", current.getSecond());
+            String[] callChain = current.getThird();
 
-                int i = 0;
-                for (i = 0; i < callChain.length; i++) {
-                    String[] qualifiedName = resolveNamespaceOrTypeName(varType, usingMethod.getCsClass());
+            for (int i = 0; i < callChain.length; i++) {
+                String[] qualifiedName = resolveNamespaceOrTypeName(varType, usingMethod.getCsClass());
+                CSClass csClass = null;
+                if (qualifiedName.length != 1) { // Fully qualified name, with namespace
                     Tuple2<CSNamespace, String[]> search = searchClosestNamespace(usingMethod.getCsClass().getNamespace(), qualifiedName);
                     CSNamespace foundNamespace = search.getFirst();
                     String[] namePartsLeft = search.getSecond();
                     if (namePartsLeft.length == 1) {
-                        CSClass csClass = searchClass(foundNamespace, namePartsLeft[0]);
-                        if (csClass == null) {
-                            break;
-                        }
-                        int finalI = i;
-                        Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(callChain[finalI])).findFirst();
-                        if (optionalMethod.isPresent()) {
-                            CSMethod method = optionalMethod.get();
-                            usingMethod.addInvokedMethod(method);
-                            varType = method.getType();
-                        } else {
-                            break;
-                        }
-                    } else {
-                        break;
+                        csClass = searchClass(foundNamespace, namePartsLeft[0]);
                     }
+                } else {
+                    csClass = searchClassInTree(usingMethod.getCsClass().getNamespace(), qualifiedName[0]);
                 }
-                if (i == callChain.length)
-                    it.remove();
+                if (csClass == null) {
+                    if (!callChain[i].isEmpty())
+                        skippedUnresolvedUsedMethods.add(new Tuple3<>(usingMethod, qualifiedName, callChain[i]));
+                    continue;
+                }
+                int finalI = i;
+                Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(callChain[finalI])).findFirst();
+                if (optionalMethod.isPresent()) {
+                    CSMethod method = optionalMethod.get();
+                    usingMethod.addInvokedMethod(method);
+                    varType = method.getType();
+                } else {
+                    if (!callChain[i].isEmpty())
+                        skippedUnresolvedUsedMethods.add(new Tuple3<>(usingMethod, qualifiedName, callChain[i]));
+                }
             }
-        } while (unresolvedUsedMethods.size() < oldSize);
-        for (Tuple3<CSMethod, String[], String[]> tuple : unresolvedUsedMethods) {
+            it.remove();
+        }
+        unresolvedUsedMethods.clear();
+        for (Tuple3<CSMethod, String[], String> tuple : skippedUnresolvedUsedMethods) {
             System.err.println("Could not find methods used in invocation chain \""
-                    + String.join(".", tuple.getThird())
+                    + tuple.getThird()
                     + "\" from method " + tuple.getFirst().getCsClass().toString() + "." + tuple.getFirst().getName());
         }
     }
