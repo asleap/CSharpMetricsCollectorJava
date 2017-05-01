@@ -8,7 +8,7 @@ C# 6 grammar was ported from [here](https://github.com/ljw1004/csharpspec).
 
 A set of metrics it collects:
 - Chidamber and Kemerer object-oriented metrics suite
-- ~~MOOD metrics~~ - not ready yet
+- MOOD metrics
 
 
 #### Build instruictions:
