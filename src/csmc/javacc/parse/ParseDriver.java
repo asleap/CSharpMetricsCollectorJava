@@ -117,7 +117,7 @@ public class ParseDriver {
     }
 
     /**
-     * Searches class in given namespace.
+     * Searches class in given namespace or recursively in parent namespaces.
      */
     public CSClass searchClassInTree(CSNamespace namespace, String className) {
         for (CSClass csClass : namespace.getClasses()) {
