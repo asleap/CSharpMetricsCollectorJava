@@ -84,57 +84,8 @@ public class CKMetric {
     }
 
     private static int calculateCbo(CSClass csClass) {
-        Set<CSClass> distinctClassesUsed = new HashSet<>();
-        Set<String> distinctTypesUsed = new HashSet<>();
-
-        // Collect classes used by given
-        distinctClassesUsed.addAll(csClass.getUsedClasses());
-
-        // Collect types used by fields, constants, and events
-        Stream.of(csClass.getFields(), csClass.getConstants(), csClass.getEvents())
-                .flatMap(Collection::stream)
-                .map(CSClassEntity::getType).forEach(distinctTypesUsed::add);
-
-        // Collect types used by methods, operators, destructors, properties, indexers, constructors and static constructors
-        Supplier<Stream<CSMethod>> allMethodStreamSupplier = () -> {
-            Stream<CSMethod> allMethodStream = Stream.of(
-                    csClass.getMethods(), csClass.getOperators(), csClass.getDestructors(), csClass.getConstructors(), csClass.getStaticConstructors())
-                    .flatMap(Collection::stream);
-            allMethodStream = Stream.concat(allMethodStream, csClass.getProperties().stream().map(CSProperty::getGetter));
-            allMethodStream = Stream.concat(allMethodStream, csClass.getProperties().stream().map(CSProperty::getSetter));
-            allMethodStream = Stream.concat(allMethodStream, csClass.getIndexers().stream().map(CSProperty::getGetter));
-            allMethodStream = Stream.concat(allMethodStream, csClass.getIndexers().stream().map(CSProperty::getSetter));
-            allMethodStream = allMethodStream.filter(Objects::nonNull);
-            return allMethodStream;
-        };
-
-        // Handle method formal parameters
-        allMethodStreamSupplier.get().map(CSMethod::getFormalParameters).flatMap(Collection::stream)
-                .map(CSClassEntity::getType).forEach(distinctTypesUsed::add);
-
-        // Handle method local variables
-        allMethodStreamSupplier.get().map(CSMethod::getLocalVariables).flatMap(Collection::stream)
-                .map(CSClassEntity::getType).forEach(distinctTypesUsed::add);
-
-        // Handle return types
-        allMethodStreamSupplier.get().map(CSMethod::getType).forEach(distinctTypesUsed::add);
-
-        // Handle method classes of invoked methods
-        allMethodStreamSupplier.get().map(CSMethod::getInvokedMethods).flatMap(Collection::stream)
-                .map(CSMethod::getCsClass).forEach(distinctClassesUsed::add);
-
-        // Collect types used by indexers
-        csClass.getIndexers().stream()
-                .map(CSIndexer::getFormalParameters).flatMap(Collection::stream)
-                .map(CSParameter::getType).forEach(distinctTypesUsed::add);
-
-        // Delete repetitions
-        distinctClassesUsed.remove(csClass);
-        distinctTypesUsed.remove(csClass.getName());
-        distinctTypesUsed.remove(csClass.toString());
-        distinctTypesUsed.removeAll(distinctClassesUsed.stream().map(CSClass::getName).collect(Collectors.toSet()));
-        distinctTypesUsed.removeAll(distinctClassesUsed.stream().map(CSClass::toString).collect(Collectors.toSet()));
-
+        Set<CSClass> distinctClassesUsed = csClass.getUsedClasses();
+        Set<String> distinctTypesUsed = csClass.getUsedTypes();
 
         return distinctClassesUsed.size() + distinctTypesUsed.size();
     }

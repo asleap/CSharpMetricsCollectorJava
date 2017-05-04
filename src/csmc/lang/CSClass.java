@@ -1,8 +1,8 @@
 package csmc.lang;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CSClass {
     private Set<CSModifier> modifiers;
@@ -76,6 +76,13 @@ public class CSClass {
         return result;
     }
 
+    /**
+     * Returns methods which is defined in this classes, including overridden methods
+     */
+    public Set<CSMethod> getDefinedMethods() {
+        return methods;
+    }
+
     public Set<CSMethod> getOperators() {
         return operators;
     }
@@ -109,7 +116,46 @@ public class CSClass {
     }
 
     public Set<CSClass> getUsedClasses() {
-        return usedClasses;
+        Set<CSClass> result = new HashSet<>(usedClasses);
+
+        // Handle method classes of invoked methods
+        getAllMethods().stream().map(CSMethod::getInvokedMethods).flatMap(Collection::stream)
+                .map(CSMethod::getCsClass).forEach(result::add);
+
+        result.remove(this);
+        return result;
+    }
+
+    public Set<String> getUsedTypes() {
+        Set<String> result = new HashSet<>();
+
+        // Collect types used by fields, constants, and events
+        Stream.of(getFields(), getConstants(), getEvents())
+                .flatMap(Collection::stream)
+                .map(CSClassEntity::getType).forEach(result::add);
+
+        // Handle method formal parameters
+        getAllMethods().stream().map(CSMethod::getFormalParameters).flatMap(Collection::stream)
+                .map(CSClassEntity::getType).forEach(result::add);
+
+        // Handle method local variables
+        getAllMethods().stream().map(CSMethod::getLocalVariables).flatMap(Collection::stream)
+                .map(CSClassEntity::getType).forEach(result::add);
+
+        // Handle return types
+        getAllMethods().stream().map(CSMethod::getType).forEach(result::add);
+
+        // Collect types used by indexers
+        getIndexers().stream()
+                .map(CSIndexer::getFormalParameters).flatMap(Collection::stream)
+                .map(CSParameter::getType).forEach(result::add);
+
+        // Delete repetitions
+        result.remove(getName());
+        result.remove(toString());
+        result.removeAll(getUsedClasses().stream().map(CSClass::getName).collect(Collectors.toSet()));
+        result.removeAll(getUsedClasses().stream().map(CSClass::toString).collect(Collectors.toSet()));
+        return result;
     }
 
     public Set<CSClass> getChildren() {
@@ -183,6 +229,31 @@ public class CSClass {
 
     public void addUsedClass(CSClass csClass) {
         usedClasses.add(csClass);
+    }
+
+    public Set<CSMethod> getAllMethods() {
+        Stream<CSMethod> allMethodStream = Stream.of(
+                getMethods(), getOperators(), getDestructors(),
+                getConstructors(), getStaticConstructors())
+                .flatMap(Collection::stream);
+        allMethodStream = Stream.concat(allMethodStream, getProperties().stream().map(CSProperty::getGetter));
+        allMethodStream = Stream.concat(allMethodStream, getProperties().stream().map(CSProperty::getSetter));
+        allMethodStream = Stream.concat(allMethodStream, getIndexers().stream().map(CSProperty::getGetter));
+        allMethodStream = Stream.concat(allMethodStream, getIndexers().stream().map(CSProperty::getSetter));
+        allMethodStream = allMethodStream.filter(Objects::nonNull);
+        return allMethodStream.collect(Collectors.toSet());
+    }
+
+    public Set<CSParameter> getAllFields() {
+        Stream<CSParameter> allParametersStream = Stream.of(
+                getFields(), getEvents(), getConstants())
+                .flatMap(Collection::stream);
+        allParametersStream = allParametersStream.filter(Objects::nonNull);
+        return allParametersStream.collect(Collectors.toSet());
+    }
+
+    public boolean isSubclassOf(CSClass otherClass) {
+        return parent == otherClass || (parent != null && parent.isSubclassOf(otherClass));
     }
 
     @Override

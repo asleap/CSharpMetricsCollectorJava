@@ -9,6 +9,7 @@ import csmc.lang.CSMethod;
 import csmc.lang.CSNamespace;
 import csmc.javacc.parse.context.NamespaceContext;
 import csmc.javacc.parse.util.Tuple2;
+import csmc.lang.CSParameter;
 
 import java.io.*;
 import java.util.*;
@@ -278,21 +279,36 @@ public class ParseDriver {
                     continue;
                 }
                 int finalI = i;
-                Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(callChain[finalI])).findFirst();
-                if (optionalMethod.isPresent()) {
-                    CSMethod method = optionalMethod.get();
-                    usingMethod.addInvokedMethod(method);
-                    varType = method.getType();
+                if (callChain[i].contains("(")) {
+                    Optional<CSMethod> optionalMethod = csClass.getAllMethods().stream().filter(m ->
+                            m.getName().equals(callChain[finalI].substring(0, callChain[finalI].indexOf('(')))).findFirst();
+                    if (optionalMethod.isPresent()) {
+                        CSMethod method = optionalMethod.get();
+                        usingMethod.addInvokedMethod(method);
+                        varType = method.getType();
+                    } else {
+                        if (!callChain[i].isEmpty())
+                            skippedUnresolvedUsedMethods.add(new Tuple3<>(usingMethod, qualifiedName, callChain[i]));
+                    }
                 } else {
-                    if (!callChain[i].isEmpty())
-                        skippedUnresolvedUsedMethods.add(new Tuple3<>(usingMethod, qualifiedName, callChain[i]));
+                    Optional<CSParameter> optionalAttribute = csClass.getAllFields().stream().filter(m ->
+                            m.getName().equals(callChain[finalI])).findFirst();
+                    if (optionalAttribute.isPresent()) {
+                        CSParameter accessedAttribute = optionalAttribute.get();
+                        usingMethod.addAccessedAttribute(accessedAttribute);
+                        varType = accessedAttribute.getType();
+                    } else {
+                        if (!callChain[i].isEmpty())
+                            skippedUnresolvedUsedMethods.add(new Tuple3<>(usingMethod, qualifiedName, callChain[i]));
+                    }
                 }
+
             }
             it.remove();
         }
         unresolvedUsedMethods.clear();
         for (Tuple3<CSMethod, String[], String> tuple : skippedUnresolvedUsedMethods) {
-            System.err.println("Could not find methods used in invocation chain \""
+            System.err.println("Could not parse invocation/access chain \""
                     + tuple.getThird()
                     + "\" from method " + tuple.getFirst().getCsClass().toString() + "." + tuple.getFirst().getName());
         }

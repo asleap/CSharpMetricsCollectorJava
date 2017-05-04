@@ -10,6 +10,7 @@ public class CSMethod extends CSClassEntity {
     private String body;
     private Set<CSParameter> localVariables;
     private Set<CSMethod> invokedMethods;
+    private Set<CSParameter> accessedAttributes;
 
     public CSMethod(CSClass csClass, Set<CSModifier> modifiers, String type, String name, Set<CSParameter> formalParameters, Set<String> typeParameters, String body) {
         super(csClass, modifiers, type, name);
@@ -18,6 +19,7 @@ public class CSMethod extends CSClassEntity {
         this.body = body;
         this.localVariables = new HashSet<>();
         this.invokedMethods = new HashSet<>();
+        this.accessedAttributes = new HashSet<>();
     }
 
     public Set<CSParameter> getFormalParameters() {
@@ -40,8 +42,16 @@ public class CSMethod extends CSClassEntity {
         return invokedMethods;
     }
 
+    public Set<CSParameter> getAccessedAttributes() {
+        return accessedAttributes;
+    }
+
     public void addLocalVariable(CSParameter variable) {
         localVariables.add(variable);
+    }
+
+    public void addAccessedAttribute(CSParameter accessedAttribute) {
+        accessedAttributes.add(accessedAttribute);
     }
 
     public void addInvokedMethod(CSMethod invokedMethod) {
@@ -55,7 +65,8 @@ public class CSMethod extends CSClassEntity {
         if (!super.equals(o)) return false;
         CSMethod csMethod = (CSMethod) o;
         return Objects.equals(formalParameters, csMethod.formalParameters) &&
-                Objects.equals(typeParameters, csMethod.typeParameters);
+                Objects.equals(typeParameters, csMethod.typeParameters) &&
+                Objects.equals(getName(), csMethod.getName());
     }
 
     @Override

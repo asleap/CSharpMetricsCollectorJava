@@ -441,7 +441,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if (argu instanceof MethodContext){
+        } else if (argu instanceof MethodContext) {
             MethodContext ctx = (MethodContext) argu;
             StringWriter writer = new StringWriter();
             TreeDumper dumper = new TreeDumper(writer);
@@ -1135,7 +1135,7 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                     varType = parameter.getType();
                 }
 
-                callChain = Arrays.stream(callChain).filter(s -> s.contains("(") && s.contains(")")).map(call -> call.substring(0, call.indexOf("("))).toArray(String[]::new);
+//                callChain = Arrays.stream(callChain).filter(s -> s.contains("(") && s.contains(")")).map(call -> call.substring(0, call.indexOf("("))).toArray(String[]::new);
 
                 for (int i = 0; i < callChain.length; i++) {
                     String[] qualifiedName = parseDriver.resolveNamespaceOrTypeName(varType, classCtx.getValue());
@@ -1148,16 +1148,29 @@ public class ParseVisitor extends GJDepthFirst<ParseContext, ParseContext> {
                             parseDriver.addUnresolvedUsedMethod(ctx.getValue(), qualifiedName, Arrays.copyOfRange(callChain, i, callChain.length));
                             break;
                         }
-                        String[] finalCallChain = callChain;
                         int finalI = i;
-                        Optional<CSMethod> optionalMethod = csClass.getMethods().stream().filter(m -> m.getName().equals(finalCallChain[finalI])).findFirst();
-                        if (optionalMethod.isPresent()) {
-                            CSMethod method = optionalMethod.get();
-                            ctx.getValue().addInvokedMethod(method);
-                            varType = method.getType();
+                        if (callChain[i].contains("(")) {
+                            Optional<CSMethod> optionalMethod = csClass.getAllMethods().stream().filter(m ->
+                                    m.getName().equals(callChain[finalI].substring(0, callChain[finalI].indexOf('(')))).findFirst();
+                            if (optionalMethod.isPresent()) {
+                                CSMethod method = optionalMethod.get();
+                                ctx.getValue().addInvokedMethod(method);
+                                varType = method.getType();
+                            } else {
+                                parseDriver.addUnresolvedUsedMethod(ctx.getValue(), qualifiedName, Arrays.copyOfRange(callChain, i, callChain.length));
+                                break;
+                            }
                         } else {
-                            parseDriver.addUnresolvedUsedMethod(ctx.getValue(), qualifiedName, Arrays.copyOfRange(callChain, i, callChain.length));
-                            break;
+                            Optional<CSParameter> optionalAttribute = csClass.getAllFields().stream().filter(m ->
+                                    m.getName().equals(callChain[finalI])).findFirst();
+                            if (optionalAttribute.isPresent()) {
+                                CSParameter accessedAttribute = optionalAttribute.get();
+                                ctx.getValue().addAccessedAttribute(accessedAttribute);
+                                varType = accessedAttribute.getType();
+                            } else {
+                                parseDriver.addUnresolvedUsedMethod(ctx.getValue(), qualifiedName, Arrays.copyOfRange(callChain, i, callChain.length));
+                                break;
+                            }
                         }
                     } else {
                         parseDriver.addUnresolvedUsedMethod(ctx.getValue(), qualifiedName, Arrays.copyOfRange(callChain, i, callChain.length));

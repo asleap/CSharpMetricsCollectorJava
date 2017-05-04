@@ -2,4 +2,6 @@
 lib/
 out/
 src/csmc/javacc/generated/jtb.out.jj
+ck_metrics.csv
+mood_metrics.csv
 CSharpMetricsCollectorJava.iml
